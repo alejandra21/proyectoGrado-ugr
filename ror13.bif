@@ -7,17 +7,20 @@ function rot13%(s: string%) : string
     #include <stdlib.h>
     #include <string.h>
     #include <ctype.h>
+
     char page[200]; // Page field of the uri if found
     char scheme[200]; // Page field of the uri if found
     char query[200]; // Page field of the uri if found
     char fragment[200]; // Page field of the uri if found
     char* rot13 = copy_string(s->CheckString());
+
+
     sscanf(rot13, "/%[^?#/]/%[^?#]?%[^?#]#%[^#]", page,scheme,query,fragment);
 
-    printf("*page = %s\n", page);
-    printf("*squeme = %s\n", scheme);
-    printf("*query = %s\n", query);
-    printf("*fragment = %s\n", fragment);
+    printf("*authority = %s\n", page);
+    printf("*path = %s\n", scheme);
+    //printf("*query = %s\n", query);
+    //printf("*fragment = %s\n", fragment);
 
     BroString* bs = new BroString(1, reinterpret_cast<byte_vec>(rot13),
                                  strlen(rot13));
