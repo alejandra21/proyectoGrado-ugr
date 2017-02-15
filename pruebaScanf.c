@@ -2,52 +2,85 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
     /* code */
     char page[200]; // Page field of the uri if found
     char scheme[200]; // Page field of the uri if found
     char query[200]; // Page field of the uri if found
     char fragment[200]; // Page field of the uri if found
-    char* rot13 = "/?manifestacion=Pinturas+Rupestres&pepe=/#pepe";
+    char uri[1000];
+    FILE *archivoProcesos;
+    char* nombreSalida = argv[1];
 
 
-    if (sscanf(rot13, "/%[^?#/]%[^?#]?%[^?#]#%[^#]", page,scheme,query,fragment) == 4) {
+    if ( (archivoProcesos=fopen(argv[1],"r")) == NULL ) {
 
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
+        perror("Error: El archivo indicado no fue encontrado ");
+        printf("errno = %d. \n",errno);
+        exit(1);
     }
-    else if (sscanf(rot13, "/%[^?#/]%[^?#]?%[^?#]", page,scheme,query) == 3) {
 
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
-    }
-    else if (sscanf(rot13, "/%[^?#/]%[^?#]", page,scheme) == 2) {
+    else {
 
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
-    }
-    else if (sscanf(rot13, "/%[^?#/]%[^?#]#%[^#]", page,scheme,fragment) == 3){
+        archivoProcesos = fopen(argv[1],"r");
+        int FinalArchivo = 0;
+        while (FinalArchivo == 0) {
 
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*fragment = %s\n", fragment);
+            // Se reserva el espacio de memoria para la nueva linea
+            fscanf(archivoProcesos," %[^\n]\n" ,uri);
 
-    }
-    else if (sscanf(rot13, "%[^?#]?%[^?#]#%[^#]", scheme,query,fragment) == 3){
+            printf("-----------------------------------------------\n");
+            printf("URI :%s\n",uri);
+            if (sscanf(uri, "http://%[^?#/]%[^?#]?%[^?#]#%[^#]", page,scheme,query,fragment) == 4) {
 
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
+                printf("*authority = %s\n", page);
+                printf("*path = %s\n", scheme);
+                printf("*query = %s\n", query);
+                printf("*fragment = %s\n", fragment);
+            }
+            else if (sscanf(uri, "http://%[^?#/]%[^?#]?%[^?#]", page,scheme,query) == 3) {
+
+                printf("*authority = %s\n", page);
+                printf("*path = %s\n", scheme);
+                printf("*query = %s\n", query);
+            }
+            else if (sscanf(uri, "http://%[^?#/]%[^?#]#%[^#]", page,scheme,fragment) == 3){
+
+                printf("*authority = %s\n", page);
+                printf("*path = %s\n", scheme);
+                printf("*fragment = %s\n", fragment);
+
+            }
+            else if (sscanf(uri, "http://%[^?#/]%[^?#]", page,scheme) == 2) {
+
+                printf("*authority = %s\n", page);
+                printf("*path = %s\n", scheme);
+
+            }
+            else if (sscanf(uri, "http://%[^?#/]", page) == 1) {
+
+                printf("*authority = %s\n", page);
+
+            }
+            else if (sscanf(uri, "http://%[^?#]?%[^?#]#%[^#]", scheme,query,fragment) == 3){
+
+                printf("*path = %s\n", scheme);
+                printf("*query = %s\n", query);
+                printf("*fragment = %s\n", fragment);
+            }
+            printf("-----------------------------------------------\n");
+
+            // Se verifica si se llego al final del archivo.
+            if (feof(archivoProcesos)){
+                FinalArchivo = 1;
+                fclose(archivoProcesos);    
+            }
+        }
     }
         
     return 0;

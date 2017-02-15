@@ -13,7 +13,7 @@ int main(int argc, char **argv)
    char err_buf[BUFSIZ];
    char* src = argv[1];  
 
-   const char* pattern = "([Hh][Tt][Tt][Pp][Ss]:)?(//([^/?#]*))?([^?#]*)([/?][^#]*)?(#(.*))?";
+   const char* pattern = "(https?://)?(([^/?#]*))?([^?#]*)([/?][^#]*)?(#(.*))?";
 
    regex_t preg;
 
