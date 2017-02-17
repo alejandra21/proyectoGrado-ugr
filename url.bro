@@ -3,8 +3,8 @@ function parseAuthorityPath(url:string){
 	local test_pattern = /\//;
 	local results = split(url, test_pattern);
 
-	for (i in results2) {
-	    print results2[i];
+	for (i in results) {
+	    print results[i];
 	}
 
 }
@@ -12,6 +12,12 @@ function parseAuthorityPath(url:string){
 function parseQueryFragment(url:string){
 
 	print url;
+	local test_pattern = /(\?[^"'\r\n><#]*)?/;
+	local results = split_all(url, test_pattern);
+	for (i in results) {
+	    print results[i];
+	}
+
 }
 
 function parseUrl(url: string) {
@@ -26,9 +32,7 @@ function parseUrl(url: string) {
 	}
 
 	if (results[2] != ""){
-
-		parseAuthorityPath(results[2]);
-				
+		parseAuthorityPath(results[2]);		
 	}
 
 	else {
@@ -37,25 +41,36 @@ function parseUrl(url: string) {
 	}
 
 	if (results[3] != ""){
-
 		parseQueryFragment(results[3]);
 	}
 
 }
 
+function returnUri(uri:string){
+
+	local test_pattern = /(http(s)?:\/\/)?/;
+	local results = split(uri,test_pattern);
+
+	if (|results| == 2){
+		return results[2];
+	}
+	else if (|results| == 1){
+		return results[1];
+	}
+	else{
+
+		print "ERROR!";
+		exit(0);
+	}
+
+
+}
+
 event bro_init(){
 
-    local test_string = "https://www.bro.org/documentation/index.html/#ref";
-    local test_pattern = /(http(s)?:\/\/)?/;
-    local results = split(test_string,test_pattern);
-    if (|results| == 2){
-    	parseUrl(results[2]);
-    }
-    else if (|results| == 1){
-    	parseUrl(results[1]);
-    }
-    else{
-    	print "ERROR!";
-    }
+    local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria/#ref";
+    local results = returnUri(test_string);
+    parseUrl(results);
+
 
 }
