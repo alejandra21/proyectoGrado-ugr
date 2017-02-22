@@ -1,36 +1,121 @@
+type MyRecordType: record {
+
+    host: string;
+    path: table [count] of string;
+    query: table[string] of string &optional;
+    fragment: string &optional;
+
+};
+
+global parsedUri: MyRecordType;
+
+
 function parseAuthorityPath(url:string){
 
-	local test_pattern = /\//;
-	local results = split(url, test_pattern);
+	# Se comprueba que exista un host con su ruta.
+	if (url == ""){
 
-	for (i in results) {
-	    print results[i];
+		print "ERROR";
+
 	}
+	else{
 
+		local test_pattern = /\//;
+
+		local results = split(url, test_pattern);
+
+	
+		if (|results| > 2){
+
+			parsedUri$host = results[1];
+			parsedUri$path = results;
+
+			print parsedUri$host;
+			print parsedUri$path;
+
+		}
+		else if (|results| == 1){
+
+			parsedUri$host = results[1];
+			print parsedUri$host;
+
+		}
+		else {
+
+			print "ERROR!";
+			exit(0);
+
+		}
+	}
 }
 
 function parseQueryFragment(url:string){
 
-	print url;
-	local test_pattern = /(\?[^"'\r\n><#]*)?/;
+	local test_pattern = /(\/\?[^"'\r\n><#]*)?/;
 	local results = split_all(url, test_pattern);
-	for (i in results) {
-	    print results[i];
+	local queryUri : URI;
+
+	if (|results|==3){
+
+		queryUri = decompose_uri(results[2]);
+		parsedUri$query = queryUri$params;
+		parsedUri$fragment = results[3];
+
+		print parsedUri$query;
+		print parsedUri$fragment;
+
+
+		# Itero sobre los atributos.
+		for ([i] in parsedUri$query) {
+
+		    if (parsedUri$query[i] == "done")
+		        break;
+		    if (parsedUri$query[i] == "skip")
+		        next;
+		    print i;
+
+		}
+
+	}
+	else if (|results|==2){
+
+		queryUri = decompose_uri(results[2]);
+		parsedUri$query = queryUri$params;
+
+		# Itero sobre los atributos.
+		for ([i] in parsedUri$query) {
+
+		    if (parsedUri$query[i] == "done")
+		        break;
+		    if (parsedUri$query[i] == "skip")
+		        next;
+		    print i;
+
+		}
+
+	}
+	else{
+
+		print "ERROR";
+		exit(0);
 	}
 
 }
 
 function parseUrl(url: string) {
 
+	# Se parsea el host y la ruta
 	local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
 	local results = split_all(url, test_pattern);
 
+	# El primer fragmento debe estar vacio
 	if ( results[1] != "" ){
 		print "ERROR";
 		return;
 		
 	}
 
+	#El segundo fragmento contendra el host y la ruta correspondiente.
 	if (results[2] != ""){
 		parseAuthorityPath(results[2]);		
 	}
@@ -40,13 +125,15 @@ function parseUrl(url: string) {
 		return;
 	}
 
+	# El tercer fragmento (opcional) contendrá los datos para realizar
+	# el query y el fragment.
 	if (results[3] != ""){
 		parseQueryFragment(results[3]);
 	}
 
 }
 
-function returnUri(uri:string){
+function returnUri(uri:string):string{
 
 	local test_pattern = /(http(s)?:\/\/)?/;
 	local results = split(uri,test_pattern);
@@ -71,6 +158,4 @@ event bro_init(){
     local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria/#ref";
     local results = returnUri(test_string);
     parseUrl(results);
-
-
 }
