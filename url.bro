@@ -1,3 +1,8 @@
+# Segmentador de URI.
+# Este programa toma un URI, lo segmenta y lo almacena en un tipo de datos
+# record
+
+
 type MyRecordType: record {
 
     host: string;
@@ -8,6 +13,16 @@ type MyRecordType: record {
 };
 
 global parsedUri: MyRecordType;
+
+
+function inicializarRecord(datos: MyRecordType){
+
+	datos$host = "";
+	datos$path = table();
+	datos$query = table();;
+	datos$fragment = "";
+
+}
 
 
 function parseAuthorityPath(url:string){
@@ -65,7 +80,7 @@ function parseQueryFragment(url:string){
 		print parsedUri$fragment;
 
 
-		# Itero sobre los atributos.
+		# Itero sobre los atributos
 		for ([i] in parsedUri$query) {
 
 		    if (parsedUri$query[i] == "done")
@@ -155,7 +170,10 @@ function returnUri(uri:string):string{
 
 event bro_init(){
 
-    local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria/#ref";
+	# Se inicializa el registro que guardara los segmentos del URI parseado.
+	inicializarRecord(parsedUri);
+    local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria&&ana=juana/#ref";
     local results = returnUri(test_string);
     parseUrl(results);
+
 }
