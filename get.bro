@@ -223,5 +223,6 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			print c$http$host;
 			parseHost(c$http$host);
 			parseUrl(c$http$uri);
+			inicializarRecord(parsedUri);
 		}
 	}
