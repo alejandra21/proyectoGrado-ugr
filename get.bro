@@ -57,10 +57,9 @@ function parsePath(url:string){
 }
 
 function parseFragment(url:string){
-
+	
 	local test_pattern = /\/#.*/;
-	local results = split_all(url, test_pattern);
-
+	local results = split(url, test_pattern);
 	if (|results| == 2){
 
 		if (results[1] == ""){
@@ -70,14 +69,14 @@ function parseFragment(url:string){
 		}
 		else{
 
-			print "ERROR fragment!";
+			print "ERROR fragment 1!";
 			exit(0);	
 
 		}
 
 	}
 	else{
-		print "ERROR fragment!";
+		print "ERROR fragment 2!";
 		exit(0);		
 	}
 
@@ -345,6 +344,12 @@ event bro_init(){
 	Input::add_table([$source="B1", $name="BS1",
 	                      $idx=Word, $val=Probability, $destination=BS1]);
 
+	parseHost("http://www.waldronsphotography.com");
+	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
+	print evaluarHostPath(parsedUri$host,BS1);
+	print evaluarValores(parsedUri$query,BS1);
+	print evaluarAtributos(parsedUri$query,BS1);
+
 }
 
 event Input::end_of_data(name: string, source: string) {
@@ -361,10 +366,10 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			print uri;
 			print "El host es:";
 			print c$http$host;
-			parseHost(c$http$host);
-			parseUrl(c$http$uri);
-			print evaluarHostPath(parsedUri$host,BS1);
-			print evaluarValores(parsedUri$query,BS1);
+			#parseHost(c$http$host);
+			#parseUrl(c$http$uri);
+			#print evaluarHostPath(parsedUri$host,BS1);
+			#print evaluarValores(parsedUri$query,BS1);
 			inicializarRecord(parsedUri);
 		}
 	
