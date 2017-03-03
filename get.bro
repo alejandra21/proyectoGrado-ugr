@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------#
+#					 			 IMPORTES           						   #
+#------------------------------------------------------------------------------#
+
 module HTTP;
 
 
@@ -9,8 +13,8 @@ type MyRecordType: record {
 
     host: table [count] of string;
     path: table [count] of string;
-    query: table[string] of string &optional;
-    fragment: string &optional;
+    query: table[string] of string &default = table();
+    fragment: string &default = "";
 
 };
 
@@ -19,12 +23,13 @@ type Word: record {
 };
 
 type Probability: record {
-        probability: string;
+        probability: double;
 };
 
 
 global BS1: table[string] of Probability = table();
 global parsedUri: MyRecordType;
+global epsilon : double = 0.0001;
 
 
 #------------------------------------------------------------------------------#
@@ -204,23 +209,130 @@ function parseUrl(url: string) {
 
 }
 
-function returnUri(uri:string):string{
+#------------------------------------------------------------------------------#
+#			         FUNCIONES PARA EL MODULO DE EVALUACION                    #
+#------------------------------------------------------------------------------#
 
-	local test_pattern = /(http(s)?:\/\/)?/;
-	local results = split(uri,test_pattern);
+function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability): double{
 
-	if (|results| == 2){
-		return results[2];
+	local results : double;
+	local OOV : bool = T;
+
+	results = 0.0;
+
+	for ( i in wordList){
+
+		for ([key] in pVector){
+
+			if (wordList[i] == key){
+
+				# Se suma la probabilidad de la palabra que se encuentra en el
+				# diccionario.
+				print "estoy en la funcion";
+				results =  results + pVector[key]$probability;
+				OOV = F;
+			}
+		}
+	
+		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
+		# muy baja.
+
+		if (OOV){
+
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+		}
+		else{
+
+			# Se entra en este caso si la palabra estaba en el vocabulario.
+			OOV = T;
+		}
+	
 	}
-	else if (|results| == 1){
-		return results[1];
-	}
-	else{
 
-		print "ERROR RETURN URI!";
-		exit(0);
+	return results;
+
+}
+
+function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability): double{
+
+	local results : double;
+	local OOV : bool = T;
+
+	results = 0.0;
+
+	for ( [word] in wordList ){
+
+		for ([key] in pVector){
+
+			if (word == key){
+
+				# Se suma la probabilidad de la palabra que se encuentra en el
+				# diccionario.
+				print "estoy en la funcion";
+				results =  results + pVector[key]$probability;
+				OOV = F;
+			}
+		}
+	
+		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
+		# muy baja.
+
+		if (OOV){
+
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+		}
+		else{
+
+			# Se entra en este caso si la palabra estaba en el vocabulario.
+			OOV = T;
+		}
+	
 	}
 
+	return results;
+
+}
+
+function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability): double{
+
+	local results : double;
+	local OOV : bool = T;
+
+	results = 0.0;
+
+	for ( i in wordList){
+
+		for ([key] in pVector){
+
+			if (wordList[i] == key){
+
+				# Se suma la probabilidad de la palabra que se encuentra en el
+				# diccionario.
+				print "estoy en la funcion";
+				results =  results + pVector[key]$probability;
+				OOV = F;
+			}
+		}
+	
+		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
+		# muy baja.
+
+		if (OOV){
+
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+		}
+		else{
+
+			# Se entra en este caso si la palabra estaba en el vocabulario.
+			OOV = T;
+		}
+	
+	}
+
+	return results;
 }
 
 #------------------------------------------------------------------------------#
@@ -229,7 +341,7 @@ function returnUri(uri:string):string{
 
 event bro_init(){
 
-	# Se inicializa el registro que guardara los segmentos del URI parseado.
+	# Se extraen de un archivo de texto los vectores de probabilidad B
 	Input::add_table([$source="B1", $name="BS1",
 	                      $idx=Word, $val=Probability, $destination=BS1]);
 
@@ -251,6 +363,8 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			print c$http$host;
 			parseHost(c$http$host);
 			parseUrl(c$http$uri);
+			print evaluarHostPath(parsedUri$host,BS1);
+			print evaluarValores(parsedUri$query,BS1);
 			inicializarRecord(parsedUri);
 		}
 	
