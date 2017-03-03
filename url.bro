@@ -64,9 +64,36 @@ function parseAuthorityPath(url:string){
 	}
 }
 
+function parseFragment(url:string){
+
+	local test_pattern = /\/#.*/;
+	local results = split_all(url, test_pattern);
+
+	if (|results| == 2){
+
+		if (results[1] == ""){
+
+			parsedUri$fragment = results[2];
+
+		}
+		else{
+
+			print "ERROR fragment!";
+			exit(0);	
+
+		}
+
+	}
+	else{
+		print "ERROR fragment!";
+		exit(0);		
+	}
+
+}
+
 function parseQueryFragment(url:string){
 
-	local test_pattern = /(\/\?[^"'\r\n><#]*)?/;
+	local test_pattern = /\/\?([A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?(&[A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?)*)?/;
 	local results = split_all(url, test_pattern);
 	local queryUri : URI;
 
@@ -74,11 +101,13 @@ function parseQueryFragment(url:string){
 
 		queryUri = decompose_uri(results[2]);
 		parsedUri$query = queryUri$params;
-		parsedUri$fragment = results[3];
 
-		print parsedUri$query;
-		print parsedUri$fragment;
+		# Se verifica si el "fragment" hace match con la expresion regular
+		# correspondiente.
+		parseFragment(results[3]);
 
+		#print parsedUri$query;
+		#print parsedUri$fragment;
 
 		# Itero sobre los atributos
 		for ([i] in parsedUri$query) {
@@ -92,6 +121,7 @@ function parseQueryFragment(url:string){
 		}
 
 	}
+
 	else if (|results|==2){
 
 		queryUri = decompose_uri(results[2]);
@@ -172,7 +202,7 @@ event bro_init(){
 
 	# Se inicializa el registro que guardara los segmentos del URI parseado.
 	inicializarRecord(parsedUri);
-    local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria&&ana=juana/#ref";
+    local test_string = "https://www.bro.org/documentation/index.html/?pepe=maria&&ana=juana/#holis";
     local results = returnUri(test_string);
     parseUrl(results);
 

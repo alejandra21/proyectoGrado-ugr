@@ -5,6 +5,9 @@
 #include <errno.h>
 
 
+void hola(void){
+    printf("hola\n");
+}
 
 int main(int argc, char *argv[])
 {
