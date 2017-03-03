@@ -1,7 +1,8 @@
 module HTTP;
 
+
 #------------------------------------------------------------------------------#
-#					 FUNCIONES PARA SEGMENTAR EL URI 						   #
+#					 			REGISTROS           						   #
 #------------------------------------------------------------------------------#
 
 type MyRecordType: record {
@@ -13,8 +14,22 @@ type MyRecordType: record {
 
 };
 
+type Word: record {
+        word: string;
+};
+
+type Probability: record {
+        probability: string;
+};
+
+
+global BS1: table[string] of Probability = table();
 global parsedUri: MyRecordType;
 
+
+#------------------------------------------------------------------------------#
+#					 FUNCIONES PARA SEGMENTAR EL URI 						   #
+#------------------------------------------------------------------------------#
 
 function inicializarRecord(datos: MyRecordType){
 
@@ -206,15 +221,28 @@ function returnUri(uri:string):string{
 		exit(0);
 	}
 
-
 }
 
 #------------------------------------------------------------------------------#
 #							 EVENTO PRINCIPAL                                  #
 #------------------------------------------------------------------------------#
 
+event bro_init(){
+
+	# Se inicializa el registro que guardara los segmentos del URI parseado.
+	Input::add_table([$source="B1", $name="BS1",
+	                      $idx=Word, $val=Probability, $destination=BS1]);
+
+}
+
+event Input::end_of_data(name: string, source: string) {
+        # now all data is in the table
+        #print BS1;
+}
+
 event http_reply(c: connection, version: string, code: count, reason: string)
 	{
+
 	if ( c$http$method == "GET" && c$http$status_code == 200 ){
 			local uri = c$http$uri;
 			print "EL URI ES:";
@@ -225,4 +253,5 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			parseUrl(c$http$uri);
 			inicializarRecord(parsedUri);
 		}
+	
 	}
