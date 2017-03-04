@@ -48,7 +48,6 @@ function inicializarRecord(datos: MyRecordType){
 
 function parsePath(url:string){
 
-	print url;
 	# Se comprueba que exista un host con su ruta.
 	local test_pattern = /\//;
 	local results = split(url, test_pattern);
@@ -57,7 +56,7 @@ function parsePath(url:string){
 }
 
 function parseFragment(url:string){
-	
+
 	local test_pattern = /\/#.*/;
 	local results = split(url, test_pattern);
 	if (|results| == 2){
@@ -223,6 +222,7 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 
 		for ([key] in pVector){
 
+			print wordList[i];
 			if (wordList[i] == key){
 
 				# Se suma la probabilidad de la palabra que se encuentra en el
@@ -264,6 +264,7 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 
 		for ([key] in pVector){
 
+			print key;
 			if (word == key){
 
 				# Se suma la probabilidad de la palabra que se encuentra en el
@@ -334,6 +335,22 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 	return results;
 }
 
+function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability): vector of double {
+
+	local host : double;
+	local valores : double;
+	local atributos : double;
+
+	host = evaluarHostPath(parsedUri$host,BS1);
+	valores = evaluarValores(parsedUri$query,BS1);
+	atributos = evaluarAtributos(parsedUri$query,BS1);
+
+	local results: vector of double = { host , valores , atributos };
+
+	return results;
+
+}
+
 #------------------------------------------------------------------------------#
 #							 EVENTO PRINCIPAL                                  #
 #------------------------------------------------------------------------------#
@@ -346,9 +363,12 @@ event bro_init(){
 
 	parseHost("http://www.waldronsphotography.com");
 	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-	print evaluarHostPath(parsedUri$host,BS1);
-	print evaluarValores(parsedUri$query,BS1);
-	print evaluarAtributos(parsedUri$query,BS1);
+
+	# Pensar un poco cual es la solucion mas efeciente.
+	print evaluar(parsedUri,BS1);
+	#print evaluarHostPath(parsedUri$host,BS1);
+	#print evaluarValores(parsedUri$query,BS1);
+	#print evaluarAtributos(parsedUri$query,BS1);
 
 }
 
