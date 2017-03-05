@@ -27,7 +27,10 @@ type Probability: record {
 };
 
 
-global BS1: table[string] of Probability = table();
+global BSsx: table[string] of Probability = table();
+global BSpx: table[string] of Probability = table();
+global BSax: table[string] of Probability = table();
+global BSvx: table[string] of Probability = table();
 global parsedUri: MyRecordType;
 global epsilon : double = 0.0001;
 
@@ -214,39 +217,29 @@ function parseUrl(url: string) {
 function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability): double{
 
 	local results : double;
-	local OOV : bool = T;
 
 	results = 0.0;
 
 	for ( i in wordList){
 
-		for ([key] in pVector){
+		print wordList[i];
 
-			print wordList[i];
-			if (wordList[i] == key){
+		if (wordList[i] in pVector){
 
-				# Se suma la probabilidad de la palabra que se encuentra en el
-				# diccionario.
-				print "estoy en la funcion";
-				results =  results + pVector[key]$probability;
-				OOV = F;
-			}
-		}
-	
-		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
-		# muy baja.
+			print "LA PALABRA ESTA";
 
-		if (OOV){
+			# Se suma la probabilidad de la palabra que se encuentra en el
+			# diccionario.
+			results =  results + pVector[wordList[i]]$probability;
 
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
 		}
 		else{
 
-			# Se entra en este caso si la palabra estaba en el vocabulario.
-			OOV = T;
+			print "NO ESTA LA PALABRA";
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+
 		}
-	
 	}
 
 	return results;
@@ -256,39 +249,31 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability): double{
 
 	local results : double;
-	local OOV : bool = T;
 
 	results = 0.0;
 
 	for ( [word] in wordList ){
 
-		for ([key] in pVector){
+		print "WORD";
+		print word;
 
-			print key;
-			if (word == key){
+		if (word in pVector){
 
-				# Se suma la probabilidad de la palabra que se encuentra en el
-				# diccionario.
-				print "estoy en la funcion";
-				results =  results + pVector[key]$probability;
-				OOV = F;
-			}
-		}
-	
-		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
-		# muy baja.
+			print "LA PALABRA ESTA";
 
-		if (OOV){
+			# Se suma la probabilidad de la palabra que se encuentra en el
+			# diccionario.
+			results =  results + pVector[word]$probability;
 
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
 		}
 		else{
 
-			# Se entra en este caso si la palabra estaba en el vocabulario.
-			OOV = T;
+			print "NO ESTA LA PALABRA";
+
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+
 		}
-	
 	}
 
 	return results;
@@ -298,40 +283,33 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability): double{
 
 	local results : double;
-	local OOV : bool = T;
-
 	results = 0.0;
 
+	print pVector;
 	for ( i in wordList){
 
-		for ([key] in pVector){
+		print wordList[i];
 
-			if (wordList[i] == key){
+		if (wordList[i] in pVector){
 
-				# Se suma la probabilidad de la palabra que se encuentra en el
-				# diccionario.
-				print "estoy en la funcion";
-				results =  results + pVector[key]$probability;
-				OOV = F;
-			}
-		}
-	
-		# Si la palabra esta fuera del vocabulario se le asigna una probabilidad
-		# muy baja.
+			print "LA PALABRA ESTA";
 
-		if (OOV){
+			# Se suma la probabilidad de la palabra que se encuentra en el
+			# diccionario.
+			results =  results + pVector[wordList[i]]$probability;
 
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
 		}
 		else{
 
-			# Se entra en este caso si la palabra estaba en el vocabulario.
-			OOV = T;
-		}
-	
-	}
+			print "NO ESTA LA PALABRA";
 
+			# Se entra en este caso si la palabra no estaba en el vocabulario.
+			results = results + epsilon;
+
+		}
+
+	}
+	
 	return results;
 }
 
@@ -341,9 +319,10 @@ function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability):
 	local valores : double;
 	local atributos : double;
 
-	host = evaluarHostPath(parsedUri$host,BS1);
-	valores = evaluarValores(parsedUri$query,BS1);
-	atributos = evaluarAtributos(parsedUri$query,BS1);
+
+	host = evaluarHostPath(parsedUri$host,pVector);
+	valores = evaluarValores(parsedUri$query,pVector);
+	atributos = evaluarAtributos(parsedUri$query,pVector);
 
 	local results: vector of double = { host , valores , atributos };
 
@@ -352,20 +331,33 @@ function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability):
 }
 
 #------------------------------------------------------------------------------#
+#			            FUNCIONES PARA EL ENTRENAMIENTO                        #
+#------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------#
 #							 EVENTO PRINCIPAL                                  #
 #------------------------------------------------------------------------------#
 
 event bro_init(){
 
 	# Se extraen de un archivo de texto los vectores de probabilidad B
-	Input::add_table([$source="B1", $name="BS1",
-	                      $idx=Word, $val=Probability, $destination=BS1]);
+	Input::add_table([$source="BSs", $name="BSs",
+	                      $idx=Word, $val=Probability, $destination=BSsx]);
 
-	parseHost("http://www.waldronsphotography.com");
+	Input::add_table([$source="BSp", $name="BSp",
+	                      $idx=Word, $val=Probability, $destination=BSpx]);
+
+	Input::add_table([$source="BSa", $name="BSa",
+	                      $idx=Word, $val=Probability, $destination=BSax]);
+
+	Input::add_table([$source="BSv", $name="BSv",
+	                      $idx=Word, $val=Probability, $destination=BSvx]);
+
+	parseHost("http://www.hola.com");
 	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
 
-	# Pensar un poco cual es la solucion mas efeciente.
-	print evaluar(parsedUri,BS1);
+	
+
 	#print evaluarHostPath(parsedUri$host,BS1);
 	#print evaluarValores(parsedUri$query,BS1);
 	#print evaluarAtributos(parsedUri$query,BS1);
@@ -373,8 +365,10 @@ event bro_init(){
 }
 
 event Input::end_of_data(name: string, source: string) {
-        # now all data is in the table
-        #print BS1;
+        # Pensar un poco cual es la solucion mas efeciente.
+        print evaluar(parsedUri,BSsx);
+        print BSsx;
+
 }
 
 event http_reply(c: connection, version: string, code: count, reason: string)
