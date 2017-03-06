@@ -18,6 +18,11 @@ type MyRecordType: record {
 
 };
 
+#------------------------------------------------------------------------------#
+# 						REGISTROS PARA LOS VECTORES B
+#------------------------------------------------------------------------------#
+
+
 type Word: record {
         word: string;
 };
@@ -26,14 +31,33 @@ type Probability: record {
         probability: double;
 };
 
+#------------------------------------------------------------------------------#
+# 						REGISTRO PARA LA MATRIZ A
+#------------------------------------------------------------------------------#
+
+type Column: record {
+        column: string;
+};
+
+type Rows: record {
+        Ssi: int;
+        Spi: int;
+        Sai: int;
+        Svi: int;
+};
+
+#------------------------------------------------------------------------------#
 
 global BSsx: table[string] of Probability = table();
 global BSpx: table[string] of Probability = table();
 global BSax: table[string] of Probability = table();
 global BSvx: table[string] of Probability = table();
+global A: 	 table[string] of Rows = table();
 global parsedUri: MyRecordType;
-global epsilon : double = 0.0001;
 
+# Variables para experimentar
+global epsilon : double = 0.0001;
+global probA : int = 0;
 
 #------------------------------------------------------------------------------#
 #					 FUNCIONES PARA SEGMENTAR EL URI 						   #
@@ -180,7 +204,7 @@ function parseHost(url: string){
 
 function parseUrl(url: string) {
 
-	# Se parsea el host y la ruta
+	# Se parsea la ruta
 	local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
 	local results = split_all(url, test_pattern);
 
@@ -353,10 +377,11 @@ event bro_init(){
 	Input::add_table([$source="BSv", $name="BSv",
 	                      $idx=Word, $val=Probability, $destination=BSvx]);
 
+	Input::add_table([$source="A", $name="A",
+                      $idx=Column, $val=Rows, $destination=A]);
+
 	parseHost("http://www.hola.com");
 	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-
-	
 
 	#print evaluarHostPath(parsedUri$host,BS1);
 	#print evaluarValores(parsedUri$query,BS1);
@@ -368,6 +393,7 @@ event Input::end_of_data(name: string, source: string) {
         # Pensar un poco cual es la solucion mas efeciente.
         print evaluar(parsedUri,BSsx);
         print BSsx;
+        print A;
 
 }
 
