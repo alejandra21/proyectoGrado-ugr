@@ -388,7 +388,7 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
 #------------------------------------------------------------------------------#
 
-function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Probability): vector of double {
+function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Probability): table[count] of double {
 
 	local host : double;
 	local path : double;
@@ -400,7 +400,32 @@ function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Pro
 	valores = evaluarValores(parsedUri$query,pVector[2]);
 	atributos = evaluarAtributos(parsedUri$query,pVector[3]);
 
-	local results: vector of double = { host , path, valores , atributos };
+	local results : table[count] of double = { [1] = host , 
+											   [2] = path, 
+											   [3] = valores, 
+											   [4] = atributos };
+
+	if (path == 0.0 && valores == 0.0 && atributos == 0.0){
+
+		# results = { host };
+		delete results[2];
+		delete results[3];
+		delete results[4];
+	
+	}
+	else if (valores == 0.0 && atributos == 0.0){
+
+		# results = { host , path };
+		delete results[3];
+		delete results[4];
+
+	}
+	else if (path == 0.0 ){
+
+		# results  = { host , valores , atributos };
+		delete results[2];
+
+	}
 
 	return results;
 
@@ -408,7 +433,7 @@ function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Pro
 
 #------------------------------------------------------------------------------#
 
-function calcularProbabilidad(vectorB: vector of double) : double {
+function calcularProbabilidad(vectorB: table[count] of double) : double {
 
 	local resultVectorB : double;
 	resultVectorB = 0.0;
@@ -428,7 +453,7 @@ function calcularProbabilidad(vectorB: vector of double) : double {
 function calcularIndiceAnormalidad(probabilidad: double) : double {
 
 	local indiceAnormalidad : double;
-	indiceAnormalidad = - (Math::logaritmo(probabilidad));
+	indiceAnormalidad = - (probabilidad);
 
 	return indiceAnormalidad;
 
@@ -472,31 +497,21 @@ event bro_init(){
 	Input::add_table([$source="A", $name="A",
                       $idx=Column, $val=Rows, $destination=A]);
 
-	parseHost("http://www.hola.com");
-	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-
-	print(parsedUri$path);
-
-	#local prueba: double;
-	#prueba = Math::logaritmo(2.0);
-	#print evaluarHostPath(parsedUri$host,BS1);
-	#print evaluarValores(parsedUri$query,BS1);
-	#print evaluarAtributos(parsedUri$query,BS1);
+	#parseHost("http://www.hola.com");
+	#parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
 
 }
 
 event Input::end_of_data(name: string, source: string) {
-	
-        #vectorR = evaluar(parsedUri,BSsx);
-        #print vectorR;
-        #print calcularProbabilidad(vectorR);
 
-        #print BSsx;
-        #print A;
 }
 
 event http_reply(c: connection, version: string, code: count, reason: string)
 	{
+
+	local vectorR: table[count] of double;
+	local probabilidad: double;
+	local Ns: double;
 
 	if ( c$http$method == "GET" && c$http$status_code == 200 ){
 			local uri = c$http$uri;
@@ -504,12 +519,17 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			print uri;
 			print "El host es:";
 			print c$http$host;
-			#parseHost(c$http$host);
-			#parseUrl(c$http$uri);
-			#vectorR = evaluar(parsedUri,vectorProbabilidad);
-			#probabilidad = calcularProbabilidad(vectorR);
-			#Ns = calcularIndiceAnormalidad(probabilidad);
-			#verifiarAnomalia(theta, Ns);
+			parseHost(c$http$host);
+			parseUrl(c$http$uri);
+			vectorR = evaluar(parsedUri,vectorProbabilidad);
+			print vectorR;
+			probabilidad = calcularProbabilidad(vectorR);
+			print "Probability";
+			print probabilidad;
+			Ns = calcularIndiceAnormalidad(probabilidad);
+			print "Ns";
+			print Ns;
+			verifiarAnomalia(theta, Ns);
 			inicializarRecord(parsedUri);
 		}
 	
