@@ -4,7 +4,6 @@
 
 module HTTP;
 
-
 #------------------------------------------------------------------------------#
 #					 			REGISTROS           						   #
 #------------------------------------------------------------------------------#
@@ -21,7 +20,6 @@ type MyRecordType: record {
 #------------------------------------------------------------------------------#
 # 						REGISTROS PARA LOS VECTORES B
 #------------------------------------------------------------------------------#
-
 
 type Word: record {
         word: string;
@@ -72,15 +70,26 @@ function inicializarRecord(datos: MyRecordType){
 
 }
 
+#------------------------------------------------------------------------------#
 
 function parsePath(url:string){
 
 	# Se comprueba que exista un host con su ruta.
 	local test_pattern = /\//;
 	local results = split(url, test_pattern);
+
+	# Se elimina el primer elemento.
+	if (results[1] == ""){
+
+		delete results[1];
+
+	}
+
 	parsedUri$path = results;
 
 }
+
+#------------------------------------------------------------------------------#
 
 function parseFragment(url:string){
 
@@ -108,6 +117,8 @@ function parseFragment(url:string){
 
 }
 
+#------------------------------------------------------------------------------#
+
 function parseQueryFragment(url:string){
 
 	local test_pattern = /\/\?([A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?(&[A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?)*)?/;
@@ -133,7 +144,7 @@ function parseQueryFragment(url:string){
 		        break;
 		    if (parsedUri$query[i] == "skip")
 		        next;
-		    print i;
+		    #print i;
 
 		}
 
@@ -164,6 +175,8 @@ function parseQueryFragment(url:string){
 
 }
 
+#------------------------------------------------------------------------------#
+
 function fragmentHost(url: string){
 
 
@@ -183,11 +196,40 @@ function fragmentHost(url: string){
 
 }
 
+#------------------------------------------------------------------------------#
+
+function returnUri(uri:string):string{
+
+	local test_pattern = /(http(s)?:\/\/)?/;
+	local results = split(uri,test_pattern);
+
+	if (|results| == 2){
+		return results[2];
+	}
+	else if (|results| == 1){
+		return results[1];
+	}
+	else{
+
+		print "ERROR RETURN URI!";
+		exit(0);
+	}
+
+
+}
+
+#------------------------------------------------------------------------------#
+
 function parseHost(url: string){
 
-	local test_pattern = /(http(s)?:\/\/)?(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)/;
-	local results = split_all(url, test_pattern);
+	# Se extrae el squematic.
+	local urlResult = returnUri(url);
 
+	# Se parsea el host
+	local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)/;
+	local results = split_all(urlResult, test_pattern);
+
+	# Se verifica si el host esta bien construido
 	if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
 
 		fragmentHost(results[2]);
@@ -201,6 +243,8 @@ function parseHost(url: string){
 	}
 
 }
+
+#------------------------------------------------------------------------------#
 
 function parseUrl(url: string) {
 
@@ -246,11 +290,11 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 
 	for ( i in wordList){
 
-		print wordList[i];
+		#print wordList[i];
 
 		if (wordList[i] in pVector){
 
-			print "LA PALABRA ESTA";
+			#print "LA PALABRA ESTA";
 
 			# Se suma la probabilidad de la palabra que se encuentra en el
 			# diccionario.
@@ -259,7 +303,7 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 		}
 		else{
 
-			print "NO ESTA LA PALABRA";
+			#print "NO ESTA LA PALABRA";
 			# Se entra en este caso si la palabra no estaba en el vocabulario.
 			results = results + epsilon;
 
@@ -269,6 +313,8 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 	return results;
 
 }
+
+#------------------------------------------------------------------------------#
 
 function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability): double{
 
@@ -278,12 +324,12 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 
 	for ( [word] in wordList ){
 
-		print "WORD";
-		print word;
+		#print "WORD";
+		#print word;
 
 		if (word in pVector){
 
-			print "LA PALABRA ESTA";
+			#print "LA PALABRA ESTA";
 
 			# Se suma la probabilidad de la palabra que se encuentra en el
 			# diccionario.
@@ -292,7 +338,7 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 		}
 		else{
 
-			print "NO ESTA LA PALABRA";
+			#print "NO ESTA LA PALABRA";
 
 			# Se entra en este caso si la palabra no estaba en el vocabulario.
 			results = results + epsilon;
@@ -304,12 +350,13 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 
 }
 
+#------------------------------------------------------------------------------#
+
 function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability): double{
 
 	local results : double;
 	results = 0.0;
 
-	print pVector;
 	for ( i in wordList){
 
 		print wordList[i];
@@ -337,18 +384,21 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 	return results;
 }
 
+#------------------------------------------------------------------------------#
+
 function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability): vector of double {
 
 	local host : double;
+	local path : double;
 	local valores : double;
 	local atributos : double;
 
-
 	host = evaluarHostPath(parsedUri$host,pVector);
+	path = evaluarHostPath(parsedUri$path,pVector);
 	valores = evaluarValores(parsedUri$query,pVector);
 	atributos = evaluarAtributos(parsedUri$query,pVector);
 
-	local results: vector of double = { host , valores , atributos };
+	local results: vector of double = { host , path, valores , atributos };
 
 	return results;
 
@@ -383,6 +433,10 @@ event bro_init(){
 	parseHost("http://www.hola.com");
 	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
 
+	print(parsedUri$path);
+
+	#local prueba: double;
+	#prueba = Math::logaritmo(2.0);
 	#print evaluarHostPath(parsedUri$host,BS1);
 	#print evaluarValores(parsedUri$query,BS1);
 	#print evaluarAtributos(parsedUri$query,BS1);
@@ -392,8 +446,8 @@ event bro_init(){
 event Input::end_of_data(name: string, source: string) {
         # Pensar un poco cual es la solucion mas efeciente.
         print evaluar(parsedUri,BSsx);
-        print BSsx;
-        print A;
+        #print BSsx;
+        #print A;
 
 }
 
