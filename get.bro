@@ -52,10 +52,12 @@ global BSax: table[string] of Probability = table();
 global BSvx: table[string] of Probability = table();
 global A: 	 table[string] of Rows = table();
 global parsedUri: MyRecordType;
+global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
 
 # Variables para experimentar
 global epsilon : double = 0.0001;
 global probA : int = 0;
+global theta: double = 5;
 
 #------------------------------------------------------------------------------#
 #					 FUNCIONES PARA SEGMENTAR EL URI 						   #
@@ -386,17 +388,17 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
 #------------------------------------------------------------------------------#
 
-function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability): vector of double {
+function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Probability): vector of double {
 
 	local host : double;
 	local path : double;
 	local valores : double;
 	local atributos : double;
 
-	host = evaluarHostPath(parsedUri$host,pVector);
-	path = evaluarHostPath(parsedUri$path,pVector);
-	valores = evaluarValores(parsedUri$query,pVector);
-	atributos = evaluarAtributos(parsedUri$query,pVector);
+	host = evaluarHostPath(parsedUri$host,pVector[0]);
+	path = evaluarHostPath(parsedUri$path,pVector[1]);
+	valores = evaluarValores(parsedUri$query,pVector[2]);
+	atributos = evaluarAtributos(parsedUri$query,pVector[3]);
 
 	local results: vector of double = { host , path, valores , atributos };
 
@@ -430,6 +432,18 @@ function calcularIndiceAnormalidad(probabilidad: double) : double {
 
 	return indiceAnormalidad;
 
+}
+
+#------------------------------------------------------------------------------#
+
+function verifiarAnomalia(theta: double, indiceAnormalidad: double){
+
+	if (indiceAnormalidad >= theta){
+		print "EMITIR ALARMA";
+	}
+	else {
+		print "TODO ESTA NORMAL";
+	}
 }
 
 #------------------------------------------------------------------------------#
@@ -472,15 +486,13 @@ event bro_init(){
 }
 
 event Input::end_of_data(name: string, source: string) {
-        # Pensar un poco cual es la solucion mas efeciente.
-        local vectorR: vector of double;
-        vectorR = evaluar(parsedUri,BSsx);
-        print vectorR;
-        print calcularProbabilidad(vectorR);
+	
+        #vectorR = evaluar(parsedUri,BSsx);
+        #print vectorR;
+        #print calcularProbabilidad(vectorR);
 
         #print BSsx;
         #print A;
-
 }
 
 event http_reply(c: connection, version: string, code: count, reason: string)
@@ -494,8 +506,10 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 			print c$http$host;
 			#parseHost(c$http$host);
 			#parseUrl(c$http$uri);
-			#print evaluarHostPath(parsedUri$host,BS1);
-			#print evaluarValores(parsedUri$query,BS1);
+			#vectorR = evaluar(parsedUri,vectorProbabilidad);
+			#probabilidad = calcularProbabilidad(vectorR);
+			#Ns = calcularIndiceAnormalidad(probabilidad);
+			#verifiarAnomalia(theta, Ns);
 			inicializarRecord(parsedUri);
 		}
 	
