@@ -405,6 +405,34 @@ function evaluar(uriParsed:MyRecordType, pVector: table[string] of Probability):
 }
 
 #------------------------------------------------------------------------------#
+
+function calcularProbabilidad(vectorB: vector of double) : double {
+
+	local resultVectorB : double;
+	resultVectorB = 0.0;
+
+	# Se calcula la sumatoria de las probabilidades que contiene el vectorB
+	for (i in vectorB){
+
+		resultVectorB = resultVectorB + Math::logaritmo(vectorB[i]);
+	}
+
+	return resultVectorB;
+
+}
+
+#------------------------------------------------------------------------------#
+
+function calcularIndiceAnormalidad(probabilidad: double) : double {
+
+	local indiceAnormalidad : double;
+	indiceAnormalidad = - (Math::logaritmo(probabilidad));
+
+	return indiceAnormalidad;
+
+}
+
+#------------------------------------------------------------------------------#
 #			            FUNCIONES PARA EL ENTRENAMIENTO                        #
 #------------------------------------------------------------------------------#
 
@@ -445,7 +473,11 @@ event bro_init(){
 
 event Input::end_of_data(name: string, source: string) {
         # Pensar un poco cual es la solucion mas efeciente.
-        print evaluar(parsedUri,BSsx);
+        local vectorR: vector of double;
+        vectorR = evaluar(parsedUri,BSsx);
+        print vectorR;
+        print calcularProbabilidad(vectorR);
+
         #print BSsx;
         #print A;
 

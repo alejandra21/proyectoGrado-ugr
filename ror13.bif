@@ -1,67 +1,20 @@
 module Demo;
 
-function rot13%(s: string%) : string
+function rot13%(x: double%) : double
     %{
 
     #include <stdio.h>
     #include <stdlib.h>
-    #include <string.h>
-    #include <ctype.h>
+    #include <math.h>
 
-    void hola(void){
+    char rot13[50] = "hola ale";
+    double result = log(x);
 
-        printf("hola\n");
-    }
+    printf("log(%lf) = %lf", x, result);
     
-    char page[200]; // Page field of the uri if found
-    char scheme[200]; // Page field of the uri if found
-    char query[200]; // Page field of the uri if found
-    char fragment[200]; // Page field of the uri if found
-    char* rot13 = copy_string(s->CheckString());
+    
+    return new Val(result, TYPE_DOUBLE);
 
-    printf("-----------------------------------------------\n");
-    printf("URI :%s\n",rot13);
-    if (sscanf(rot13, "http://%[^?#/]%[^?#]?%[^?#]#%[^#]", page,scheme,query,fragment) == 4) {
 
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
-    }
-    else if (sscanf(rot13, "http://%[^?#/]%[^?#]?%[^?#]", page,scheme,query) == 3) {
-
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-    }
-    else if (sscanf(rot13, "http://%[^?#/]%[^?#]#%[^#]", page,scheme,fragment) == 3){
-
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-        printf("*fragment = %s\n", fragment);
-
-    }
-    else if (sscanf(rot13, "http://%[^?#/]%[^?#]", page,scheme) == 2) {
-
-        printf("*authority = %s\n", page);
-        printf("*path = %s\n", scheme);
-
-    }
-    else if (sscanf(rot13, "http://%[^?#/]", page) == 1) {
-
-        printf("*authority = %s\n", page);
-
-    }
-    else if (sscanf(rot13, "http://%[^?#]?%[^?#]#%[^#]", scheme,query,fragment) == 3){
-
-        printf("*path = %s\n", scheme);
-        printf("*query = %s\n", query);
-        printf("*fragment = %s\n", fragment);
-    }
-    printf("-----------------------------------------------\n");
-
-    BroString* bs = new BroString(1, reinterpret_cast<byte_vec>(rot13),
-                                 strlen(rot13));
-    return new StringVal(bs);
     %}
 
