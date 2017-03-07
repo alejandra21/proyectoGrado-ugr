@@ -50,7 +50,7 @@ type Rows: record {
 
 type Entrenamiento: record {
 
-		numPalabras : int &default = 1;
+		numPalabras : double &default = 1.0;
         probability: double &default = 0.0;
 };
 
@@ -65,16 +65,30 @@ global A: 	 table[string] of Rows = table();
 global parsedUri: MyRecordType;
 global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
 
-# Variables utilizadas en el modulo de entrenamiento.
-global numeroPalabraSs : int = 0;
-global numeroPalabraSp : int = 0;
-global numeroPalabraSv : int = 0;
-global numeroPalabraSa : int = 0;
+#------------------------------------------------------------------------------#
 
+# Variables utilizadas en el modulo de entrenamiento.
+
+# Variables que almacenan el numero total de palabras en el vocabulario.
+global numeroPalabraSs : double = 0.0;
+global numeroPalabraSp : double = 0.0;
+global numeroPalabraSv : double = 0.0;
+global numeroPalabraSa : double = 0.0;
+
+# Variables que almacenaran la probabilidad de observacion global minima mayor 
+# cero
+global probabilidadMinimaSs : double = 2.0;
+global probabilidadMinimaSp : double = 2.0;
+global probabilidadMinimaSv : double = 2.0;
+global probabilidadMinimaSa : double = 2.0;
+
+# Tablas que almacenan el vocabulario de cada uno de los estados del automata
 global entrenamientoSs: table[string] of Entrenamiento = table();
 global entrenamientoSp: table[string] of Entrenamiento = table();
 global entrenamientoSa: table[string] of Entrenamiento = table();
 global entrenamientoSv: table[string] of Entrenamiento = table();
+
+#------------------------------------------------------------------------------#
 
 # Variables para experimentar
 global epsilon : double = 0.0001;
@@ -497,7 +511,7 @@ function verifiarAnomalia(theta: double, indiceAnormalidad: double){
 #			            FUNCIONES PARA EL ENTRENAMIENTO                        #
 #------------------------------------------------------------------------------#
 
-function entrenamientoPathHost(wordList: table [count] of string, vocabulario: table[string] of Entrenamiento,numPalabras: int): int{
+function entrenamientoPathHost(wordList: table [count] of string, vocabulario: table[string] of Entrenamiento,numPalabras: double): double{
 
 	for (i in wordList){
 
@@ -525,7 +539,7 @@ function entrenamientoPathHost(wordList: table [count] of string, vocabulario: t
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoAtributos(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: int): int{
+function entrenamientoAtributos(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double{
 
 	
 	for (i in wordList){
@@ -556,7 +570,7 @@ function entrenamientoAtributos(wordList: table [string] of string, vocabulario:
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoValores(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: int): int {
+function entrenamientoValores(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double {
 	
 	for ( [word] in wordList){
 
@@ -582,6 +596,35 @@ function entrenamientoValores(wordList: table [string] of string, vocabulario: t
 
 	return numPalabras;
 	
+}
+
+#------------------------------------------------------------------------------#
+
+function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPalabras: double): double{
+
+	local probabilidadMinima: double;
+
+	if (|vocabulario| == 0 ){
+		probabilidadMinima = 0.0;
+	}
+	else {
+		probabilidadMinima = 2.0;
+	}
+
+	for (i in vocabulario){
+
+		# Se calcula la probabilidad de la palabra.
+		vocabulario[i]$probability = (vocabulario[i]$numPalabras)/(numPalabras);
+
+		# Condicional utilizado para buscar la probabilidad minima del 
+		# vocabulario.
+		if ( vocabulario[i]$probability  < probabilidadMinima) {
+
+			probabilidadMinima = vocabulario[i]$probability;
+
+		}
+	} 
+	return probabilidadMinima;
 }
 
 #------------------------------------------------------------------------------#
@@ -620,19 +663,43 @@ event Input::end_of_data(name: string, source: string) {
 	numeroPalabraSa = entrenamientoAtributos(parsedUri$query, entrenamientoSa ,numeroPalabraSa);
 	numeroPalabraSv = entrenamientoValores(parsedUri$query, entrenamientoSv ,numeroPalabraSv);
 
-	print "---------------------------------------------------------------------";
+	#print "---------------------------------------------------------------------";
+	#print numeroPalabraSs;
+	#print entrenamientoSs;
+	#print "---------------";
+	#print numeroPalabraSp;
+	#print entrenamientoSp;
+	#print "---------------";
+	#print numeroPalabraSa;
+	#print entrenamientoSa;
+	#print "---------------";
+	#print numeroPalabraSv;
+	#print entrenamientoSv;
+	#print "---------------***------";
+
+	probabilidadMinimaSs = evaluarProbabilidad(entrenamientoSs ,numeroPalabraSs);
+	probabilidadMinimaSp = evaluarProbabilidad(entrenamientoSp ,numeroPalabraSp);
+	probabilidadMinimaSa = evaluarProbabilidad(entrenamientoSa ,numeroPalabraSa);
+	probabilidadMinimaSv = evaluarProbabilidad(entrenamientoSv ,numeroPalabraSv);
+
+	print "----------------------------##----------------------------------------";
+	print probabilidadMinimaSs;
 	print numeroPalabraSs;
 	print entrenamientoSs;
 	print "---------------";
+	print probabilidadMinimaSp;
 	print numeroPalabraSp;
 	print entrenamientoSp;
 	print "---------------";
+	print probabilidadMinimaSa;
 	print numeroPalabraSa;
 	print entrenamientoSa;
 	print "---------------";
+	print probabilidadMinimaSv;
 	print numeroPalabraSv;
 	print entrenamientoSv;
-	print "---------------";
+	print "---------------##------";
+
 
 }
 
