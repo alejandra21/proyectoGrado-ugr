@@ -45,6 +45,17 @@ type Rows: record {
 };
 
 #------------------------------------------------------------------------------#
+# 						REGISTRO USADO EN EL ENTRENAMIENTO
+#------------------------------------------------------------------------------#
+
+type Entrenamiento: record {
+
+		numPalabras : int &default = 1;
+        probability: double &default = 0.0;
+};
+
+
+#------------------------------------------------------------------------------#
 
 global BSsx: table[string] of Probability = table();
 global BSpx: table[string] of Probability = table();
@@ -53,6 +64,17 @@ global BSvx: table[string] of Probability = table();
 global A: 	 table[string] of Rows = table();
 global parsedUri: MyRecordType;
 global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
+
+# Variables utilizadas en el modulo de entrenamiento.
+global numeroPalabraSs  : int = 0;
+global numeroPalabrasSp : int = 0;
+global numeroPalabrasSv : int = 0;
+global numeroPalabrasSa : int = 0;
+
+global entrenamientoSs: table[string] of Entrenamiento = table();
+global entrenamientoSp: table[string] of Entrenamiento = table();
+global entrenamientoSa: table[string] of Entrenamiento = table();
+global entrenamientoSv: table[string] of Entrenamiento = table();
 
 # Variables para experimentar
 global epsilon : double = 0.0001;
@@ -475,6 +497,50 @@ function verifiarAnomalia(theta: double, indiceAnormalidad: double){
 #			            FUNCIONES PARA EL ENTRENAMIENTO                        #
 #------------------------------------------------------------------------------#
 
+function entrenamientoPathHost(wordList: table [count] of string, vocabulario: table[string] of Entrenamiento,numPalabras: int): int{
+
+	for (i in wordList){
+
+		if (wordList[i] in vocabulario){
+
+			# Se suma una unidad a la palabra que ya se encontraba en el 
+			# vocabulario.
+			vocabulario[wordList[i]]$numPalabras = vocabulario[wordList[i]]$numPalabras + 1;
+
+		}
+		else{
+
+			# Se agrega la nueva palabra al vocabulario
+			vocabulario[wordList[i]] = Entrenamiento();
+
+		}
+	
+		# Se cuenta el numero de palabras que hay en el arreglo wordList
+		numPalabras = numPalabras + 1;
+	
+	}
+
+	print "Numero palabras";
+	print numPalabras;
+
+	return numPalabras;
+}
+
+#------------------------------------------------------------------------------#
+
+function entrenamientoAtributos(wordsList: table [string] of string, vocabulario: table[string] of Entrenamiento){
+
+	return;
+	
+}
+
+#------------------------------------------------------------------------------#
+
+function entrenamientoValores(wordsList: table [string] of string, vocabulario: table[string] of Entrenamiento){
+	return;
+	
+}
+
 #------------------------------------------------------------------------------#
 #							 EVENTO PRINCIPAL                                  #
 #------------------------------------------------------------------------------#
@@ -503,6 +569,12 @@ event bro_init(){
 }
 
 event Input::end_of_data(name: string, source: string) {
+
+	parseHost("http://www.hola.com");
+	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
+	numeroPalabraSs = entrenamientoPathHost(parsedUri$host, entrenamientoSs ,numeroPalabraSs);
+	print numeroPalabraSs;
+	print entrenamientoSs;
 
 }
 
