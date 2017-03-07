@@ -66,10 +66,10 @@ global parsedUri: MyRecordType;
 global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
 
 # Variables utilizadas en el modulo de entrenamiento.
-global numeroPalabraSs  : int = 0;
-global numeroPalabrasSp : int = 0;
-global numeroPalabrasSv : int = 0;
-global numeroPalabrasSa : int = 0;
+global numeroPalabraSs : int = 0;
+global numeroPalabraSp : int = 0;
+global numeroPalabraSv : int = 0;
+global numeroPalabraSa : int = 0;
 
 global entrenamientoSs: table[string] of Entrenamiento = table();
 global entrenamientoSp: table[string] of Entrenamiento = table();
@@ -520,24 +520,67 @@ function entrenamientoPathHost(wordList: table [count] of string, vocabulario: t
 	
 	}
 
-	print "Numero palabras";
-	print numPalabras;
-
 	return numPalabras;
 }
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoAtributos(wordsList: table [string] of string, vocabulario: table[string] of Entrenamiento){
+function entrenamientoAtributos(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: int): int{
 
-	return;
+	
+	for (i in wordList){
+
+		if (wordList[i] in vocabulario){
+
+			# Se suma una unidad a la palabra que ya se encontraba en el 
+			# vocabulario.
+			vocabulario[wordList[i]]$numPalabras = vocabulario[wordList[i]]$numPalabras + 1;
+
+		}
+	
+		else{
+
+			# Se agrega la nueva palabra al vocabulario
+			vocabulario[wordList[i]] = Entrenamiento();
+
+		}
+	
+		# Se cuenta el numero de palabras que hay en el arreglo wordList
+		numPalabras = numPalabras + 1;
+	
+	}
+
+	return numPalabras;
 	
 }
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoValores(wordsList: table [string] of string, vocabulario: table[string] of Entrenamiento){
-	return;
+function entrenamientoValores(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: int): int {
+	
+	for ( [word] in wordList){
+
+		if (word in vocabulario){
+
+			# Se suma una unidad a la palabra que ya se encontraba en el 
+			# vocabulario.
+			vocabulario[word]$numPalabras = vocabulario[word]$numPalabras + 1;
+
+		}
+	
+		else{
+
+			# Se agrega la nueva palabra al vocabulario
+			vocabulario[word] = Entrenamiento();
+
+		}
+	
+		# Se cuenta el numero de palabras que hay en el arreglo wordList
+		numPalabras = numPalabras + 1;
+	
+	}
+
+	return numPalabras;
 	
 }
 
@@ -573,8 +616,23 @@ event Input::end_of_data(name: string, source: string) {
 	parseHost("http://www.hola.com");
 	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
 	numeroPalabraSs = entrenamientoPathHost(parsedUri$host, entrenamientoSs ,numeroPalabraSs);
+	numeroPalabraSp = entrenamientoPathHost(parsedUri$path, entrenamientoSp ,numeroPalabraSp);
+	numeroPalabraSa = entrenamientoAtributos(parsedUri$query, entrenamientoSa ,numeroPalabraSa);
+	numeroPalabraSv = entrenamientoValores(parsedUri$query, entrenamientoSv ,numeroPalabraSv);
+
+	print "---------------------------------------------------------------------";
 	print numeroPalabraSs;
 	print entrenamientoSs;
+	print "---------------";
+	print numeroPalabraSp;
+	print entrenamientoSp;
+	print "---------------";
+	print numeroPalabraSa;
+	print entrenamientoSa;
+	print "---------------";
+	print numeroPalabraSv;
+	print entrenamientoSv;
+	print "---------------";
 
 }
 
