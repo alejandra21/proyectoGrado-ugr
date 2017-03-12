@@ -55,6 +55,16 @@ type Entrenamiento: record {
 };
 
 
+# Define the record type that will contain the data to log.
+type Info: record {
+
+		word : string &log &default = "";
+        probability: double &log &default = 0.0;
+};
+
+# Create an ID for our new stream
+redef enum Log::ID += { LOG };
+
 #------------------------------------------------------------------------------#
 
 global BSsx: table[string] of Probability = table();
@@ -74,13 +84,6 @@ global numeroPalabraSs : double = 0.0;
 global numeroPalabraSp : double = 0.0;
 global numeroPalabraSv : double = 0.0;
 global numeroPalabraSa : double = 0.0;
-
-# Variables que almacenaran la probabilidad de observacion global minima mayor 
-# cero
-global probabilidadMinimaSs : double = 2.0;
-global probabilidadMinimaSp : double = 2.0;
-global probabilidadMinimaSv : double = 2.0;
-global probabilidadMinimaSa : double = 2.0;
 
 # Tablas que almacenan el vocabulario de cada uno de los estados del automata
 global entrenamientoSs: table[string] of Entrenamiento = table();
@@ -600,31 +603,37 @@ function entrenamientoValores(wordList: table [string] of string, vocabulario: t
 
 #------------------------------------------------------------------------------#
 
-function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPalabras: double): double{
-
-	local probabilidadMinima: double;
-
-	if (|vocabulario| == 0 ){
-		probabilidadMinima = 0.0;
-	}
-	else {
-		probabilidadMinima = 2.0;
-	}
+function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPalabras: double){
 
 	for (i in vocabulario){
 
 		# Se calcula la probabilidad de la palabra.
 		vocabulario[i]$probability = (vocabulario[i]$numPalabras)/(numPalabras);
-
-		# Condicional utilizado para buscar la probabilidad minima del 
-		# vocabulario.
-		if ( vocabulario[i]$probability  < probabilidadMinima) {
-
-			probabilidadMinima = vocabulario[i]$probability;
-
-		}
 	} 
-	return probabilidadMinima;
+}
+
+#------------------------------------------------------------------------------#
+
+function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchivo: string) {
+
+	# Se crea el archivo.
+	Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
+
+	# Se incializa el registro que se utilizara para escribir sobre el 
+	# archivo.
+	local rec: Info;
+	rec = Info();
+
+	# Se itera sobre las palabras del vocabulario para guardarlas en el log.
+	for (palabra in vocabulario){
+
+		rec$word = palabra;
+		rec$probability = vocabulario[palabra]$probability;
+
+		# Se escribe en el archivo
+		Log::write(LOG, rec);
+	}
+
 }
 
 #------------------------------------------------------------------------------#
@@ -634,16 +643,16 @@ function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPal
 event bro_init(){
 
 	# Se extraen de un archivo de texto los vectores de probabilidad B
-	Input::add_table([$source="BSs", $name="BSs",
+	Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
 	                      $idx=Word, $val=Probability, $destination=BSsx]);
 
-	Input::add_table([$source="BSp", $name="BSp",
+	Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
 	                      $idx=Word, $val=Probability, $destination=BSpx]);
 
-	Input::add_table([$source="BSa", $name="BSa",
+	Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
 	                      $idx=Word, $val=Probability, $destination=BSax]);
 
-	Input::add_table([$source="BSv", $name="BSv",
+	Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
 	                      $idx=Word, $val=Probability, $destination=BSvx]);
 
 	Input::add_table([$source="A", $name="A",
@@ -656,14 +665,32 @@ event bro_init(){
 
 event Input::end_of_data(name: string, source: string) {
 
-	parseHost("http://www.hola.com");
-	parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-	numeroPalabraSs = entrenamientoPathHost(parsedUri$host, entrenamientoSs ,numeroPalabraSs);
-	numeroPalabraSp = entrenamientoPathHost(parsedUri$path, entrenamientoSp ,numeroPalabraSp);
-	numeroPalabraSa = entrenamientoAtributos(parsedUri$query, entrenamientoSa ,numeroPalabraSa);
-	numeroPalabraSv = entrenamientoValores(parsedUri$query, entrenamientoSv ,numeroPalabraSv);
+	#parseHost("http://www.hola.com");
+	#parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
+	#numeroPalabraSs = entrenamientoPathHost(parsedUri$host, entrenamientoSs ,numeroPalabraSs);
+	#numeroPalabraSp = entrenamientoPathHost(parsedUri$path, entrenamientoSp ,numeroPalabraSp);
+	#numeroPalabraSa = entrenamientoAtributos(parsedUri$query, entrenamientoSa ,numeroPalabraSa);
+	#numeroPalabraSv = entrenamientoValores(parsedUri$query, entrenamientoSv ,numeroPalabraSv);
 
-	#print "---------------------------------------------------------------------";
+
+	#evaluarProbabilidad(entrenamientoSs ,numeroPalabraSs);
+	#evaluarProbabilidad(entrenamientoSp ,numeroPalabraSp);
+	#evaluarProbabilidad(entrenamientoSa ,numeroPalabraSa);
+	#evaluarProbabilidad(entrenamientoSv ,numeroPalabraSv);
+
+	#escribirArchivo(entrenamientoSs,"BssPrueba");
+	#escribirArchivo(entrenamientoSp,"BspPrueba");
+	#escribirArchivo(entrenamientoSa,"BsaPrueba");
+	#escribirArchivo(entrenamientoSv,"BsvPrueba");
+
+	print "----------------------------##----------------------------------------";
+
+	print BSsx;
+	print BSpx;
+	print BSax;
+	print BSvx;
+
+	print "----------------------------##----------------------------------------";
 	#print numeroPalabraSs;
 	#print entrenamientoSs;
 	#print "---------------";
@@ -675,59 +702,42 @@ event Input::end_of_data(name: string, source: string) {
 	#print "---------------";
 	#print numeroPalabraSv;
 	#print entrenamientoSv;
-	#print "---------------***------";
-
-	probabilidadMinimaSs = evaluarProbabilidad(entrenamientoSs ,numeroPalabraSs);
-	probabilidadMinimaSp = evaluarProbabilidad(entrenamientoSp ,numeroPalabraSp);
-	probabilidadMinimaSa = evaluarProbabilidad(entrenamientoSa ,numeroPalabraSa);
-	probabilidadMinimaSv = evaluarProbabilidad(entrenamientoSv ,numeroPalabraSv);
-
-	print "----------------------------##----------------------------------------";
-	print probabilidadMinimaSs;
-	print numeroPalabraSs;
-	print entrenamientoSs;
-	print "---------------";
-	print probabilidadMinimaSp;
-	print numeroPalabraSp;
-	print entrenamientoSp;
-	print "---------------";
-	print probabilidadMinimaSa;
-	print numeroPalabraSa;
-	print entrenamientoSa;
-	print "---------------";
-	print probabilidadMinimaSv;
-	print numeroPalabraSv;
-	print entrenamientoSv;
-	print "---------------##------";
+	#print "---------------##------";
 
 
 }
 
-event http_reply(c: connection, version: string, code: count, reason: string)
-	{
+#event http_reply(c: connection, version: string, code: count, reason: string)
+#	{
 
-	local vectorR: table[count] of double;
-	local probabilidad: double;
-	local Ns: double;
+#	local vectorR: table[count] of double;
+#	local probabilidad: double;
+#	local Ns: double;
 
-	if ( c$http$method == "GET" && c$http$status_code == 200 ){
-			local uri = c$http$uri;
-			print "EL URI ES:";
-			print uri;
-			print "El host es:";
-			print c$http$host;
-			parseHost(c$http$host);
-			parseUrl(c$http$uri);
-			vectorR = evaluar(parsedUri,vectorProbabilidad);
-			print vectorR;
-			probabilidad = calcularProbabilidad(vectorR);
-			print "Probability";
-			print probabilidad;
-			Ns = calcularIndiceAnormalidad(probabilidad);
-			print "Ns";
-			print Ns;
-			verifiarAnomalia(theta, Ns);
-			inicializarRecord(parsedUri);
-		}
+#	if ( c$http$method == "GET" && c$http$status_code == 200 ){
+#			local uri = c$http$uri;
+#			print "EL URI ES:";
+#			print uri;
+#			print "El host es:";
+#			print c$http$host;
+#			parseHost(c$http$host);
+#			parseUrl(c$http$uri);
+#			vectorR = evaluar(parsedUri,vectorProbabilidad);
+#			print vectorR;
+#			probabilidad = calcularProbabilidad(vectorR);
+#			print "Probability";
+#			print probabilidad;
+#			Ns = calcularIndiceAnormalidad(probabilidad);
+#			print "Ns";
+#			print Ns;
+#			verifiarAnomalia(theta, Ns);
+#			inicializarRecord(parsedUri);
+#		}
 	
-	}
+#	}
+
+event bro_done(){
+
+	print "ESTOY LISTO";
+
+}
