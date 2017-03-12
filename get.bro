@@ -3,19 +3,7 @@
 #------------------------------------------------------------------------------#
 
 module HTTP;
-
-#------------------------------------------------------------------------------#
-#					 			REGISTROS           						   #
-#------------------------------------------------------------------------------#
-
-type MyRecordType: record {
-
-    host: table [count] of string;
-    path: table [count] of string;
-    query: table[string] of string &default = table();
-    fragment: string &default = "";
-
-};
+@load segmentacion
 
 #------------------------------------------------------------------------------#
 # 						REGISTROS PARA LOS VECTORES B
@@ -72,7 +60,7 @@ global BSpx: table[string] of Probability = table();
 global BSax: table[string] of Probability = table();
 global BSvx: table[string] of Probability = table();
 global A: 	 table[string] of Rows = table();
-global parsedUri: MyRecordType;
+
 global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
 
 #------------------------------------------------------------------------------#
@@ -98,226 +86,6 @@ global epsilon : double = 0.0001;
 global probA : int = 0;
 global theta: double = 5;
 
-#------------------------------------------------------------------------------#
-#					 FUNCIONES PARA SEGMENTAR EL URI 						   #
-#------------------------------------------------------------------------------#
-
-function inicializarRecord(datos: MyRecordType){
-
-	datos$host = table();
-	datos$path = table();
-	datos$query = table();;
-	datos$fragment = "";
-
-}
-
-#------------------------------------------------------------------------------#
-
-function parsePath(url:string){
-
-	# Se comprueba que exista un host con su ruta.
-	local test_pattern = /\//;
-	local results = split(url, test_pattern);
-
-	# Se elimina el primer elemento.
-	if (results[1] == ""){
-
-		delete results[1];
-
-	}
-
-	parsedUri$path = results;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function parseFragment(url:string){
-
-	local test_pattern = /\/#.*/;
-	local results = split(url, test_pattern);
-	if (|results| == 2){
-
-		if (results[1] == ""){
-
-			parsedUri$fragment = results[2];
-
-		}
-		else{
-
-			print "ERROR fragment 1!";
-			exit(0);	
-
-		}
-
-	}
-	else{
-		print "ERROR fragment 2!";
-		exit(0);		
-	}
-
-}
-
-#------------------------------------------------------------------------------#
-
-function parseQueryFragment(url:string){
-
-	local test_pattern = /\/\?([A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?(&[A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?)*)?/;
-	local results = split_all(url, test_pattern);
-	local queryUri : URI;
-
-	if (|results|==3){
-
-		queryUri = decompose_uri(results[2]);
-		parsedUri$query = queryUri$params;
-
-		# Se verifica si el "fragment" hace match con la expresion regular
-		# correspondiente.
-		parseFragment(results[3]);
-
-		#print parsedUri$query;
-		#print parsedUri$fragment;
-
-		# Itero sobre los atributos
-		for ([i] in parsedUri$query) {
-
-		    if (parsedUri$query[i] == "done")
-		        break;
-		    if (parsedUri$query[i] == "skip")
-		        next;
-		    #print i;
-
-		}
-
-	}
-
-	else if (|results|==2){
-
-		queryUri = decompose_uri(results[2]);
-		parsedUri$query = queryUri$params;
-
-		# Itero sobre los atributos.
-		for ([i] in parsedUri$query) {
-
-		    if (parsedUri$query[i] == "done")
-		        break;
-		    if (parsedUri$query[i] == "skip")
-		        next;
-		    print i;
-
-		}
-
-	}
-	else{
-
-		print "ERROR QUERY FRAGMENT";
-		exit(0);
-	}
-
-}
-
-#------------------------------------------------------------------------------#
-
-function fragmentHost(url: string){
-
-
-	if (url == ""){
-
-		print "ERROR";
-		exit(0);
-
-	}
-	else{
-
-		local test_pattern = /\./;
-		local results = split(url, test_pattern);
-		parsedUri$host = results;
-
-	}
-
-}
-
-#------------------------------------------------------------------------------#
-
-function returnUri(uri:string):string{
-
-	local test_pattern = /(http(s)?:\/\/)?/;
-	local results = split(uri,test_pattern);
-
-	if (|results| == 2){
-		return results[2];
-	}
-	else if (|results| == 1){
-		return results[1];
-	}
-	else{
-
-		print "ERROR RETURN URI!";
-		exit(0);
-	}
-
-
-}
-
-#------------------------------------------------------------------------------#
-
-function parseHost(url: string){
-
-	# Se extrae el squematic.
-	local urlResult = returnUri(url);
-
-	# Se parsea el host
-	local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)/;
-	local results = split_all(urlResult, test_pattern);
-
-	# Se verifica si el host esta bien construido
-	if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
-
-		fragmentHost(results[2]);
-
-	}
-	else {
-
-		print "ERROR EN HOST";
-		exit(0);
-
-	}
-
-}
-
-#------------------------------------------------------------------------------#
-
-function parseUrl(url: string) {
-
-	# Se parsea la ruta
-	local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
-	local results = split_all(url, test_pattern);
-
-	# El primer fragmento debe estar vacio
-	if ( results[1] != "" ){
-		print "ERROR PARSE URI 1";
-		print results[1];
-		return;
-		
-	}
-
-	#El segundo fragmento contendra el host y la ruta correspondiente.
-	if (results[2] != ""){
-		parsePath(results[2]);		
-	}
-
-	else {
-		print "ERROR PARSE URI 2";
-		return;
-	}
-
-	# El tercer fragmento (opcional) contendrá los datos para realizar
-	# el query y el fragment.
-	if (results[3] != ""){
-		parseQueryFragment(results[3]);
-	}
-
-}
 
 #------------------------------------------------------------------------------#
 #			         FUNCIONES PARA EL MODULO DE EVALUACION                    #
@@ -427,17 +195,17 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
 #------------------------------------------------------------------------------#
 
-function evaluar(uriParsed:MyRecordType, pVector: vector of table[string] of Probability): table[count] of double {
+function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability): table[count] of double {
 
 	local host : double;
 	local path : double;
 	local valores : double;
 	local atributos : double;
 
-	host = evaluarHostPath(parsedUri$host,pVector[0]);
-	path = evaluarHostPath(parsedUri$path,pVector[1]);
-	valores = evaluarValores(parsedUri$query,pVector[2]);
-	atributos = evaluarAtributos(parsedUri$query,pVector[3]);
+	host = evaluarHostPath(Segmentacion::parsedUri$host,pVector[0]);
+	path = evaluarHostPath(Segmentacion::parsedUri$path,pVector[1]);
+	valores = evaluarValores(Segmentacion::parsedUri$query,pVector[2]);
+	atributos = evaluarAtributos(Segmentacion::parsedUri$query,pVector[3]);
 
 	local results : table[count] of double = { [1] = host , 
 											   [2] = path, 
@@ -642,24 +410,26 @@ function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchi
 
 event bro_init(){
 
+	print "Inicio";
 	# Se extraen de un archivo de texto los vectores de probabilidad B
-	Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
-	                      $idx=Word, $val=Probability, $destination=BSsx]);
+	#Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
+	#                      $idx=Word, $val=Probability, $destination=BSsx]);
 
-	Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
-	                      $idx=Word, $val=Probability, $destination=BSpx]);
+	#Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
+	#                      $idx=Word, $val=Probability, $destination=BSpx]);
 
-	Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
-	                      $idx=Word, $val=Probability, $destination=BSax]);
+	#Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
+	#                      $idx=Word, $val=Probability, $destination=BSax]);
 
-	Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
-	                      $idx=Word, $val=Probability, $destination=BSvx]);
+	#Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
+	#                      $idx=Word, $val=Probability, $destination=BSvx]);
 
-	Input::add_table([$source="A", $name="A",
-                      $idx=Column, $val=Rows, $destination=A]);
+	#Input::add_table([$source="A", $name="A",
+    #                  $idx=Column, $val=Rows, $destination=A]);
 
-	#parseHost("http://www.hola.com");
-	#parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
+	Segmentacion::parseHost("http://www.hola.com");
+	Segmentacion::parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
+	#print Segmentacion::parsedUri;
 
 }
 
@@ -667,10 +437,10 @@ event Input::end_of_data(name: string, source: string) {
 
 	#parseHost("http://www.hola.com");
 	#parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-	#numeroPalabraSs = entrenamientoPathHost(parsedUri$host, entrenamientoSs ,numeroPalabraSs);
-	#numeroPalabraSp = entrenamientoPathHost(parsedUri$path, entrenamientoSp ,numeroPalabraSp);
-	#numeroPalabraSa = entrenamientoAtributos(parsedUri$query, entrenamientoSa ,numeroPalabraSa);
-	#numeroPalabraSv = entrenamientoValores(parsedUri$query, entrenamientoSv ,numeroPalabraSv);
+	#numeroPalabraSs = entrenamientoPathHost(Segmentacion::parsedUri$host, entrenamientoSs ,numeroPalabraSs);
+	#numeroPalabraSp = entrenamientoPathHost(Segmentacion::parsedUri$path, entrenamientoSp ,numeroPalabraSp);
+	#numeroPalabraSa = entrenamientoAtributos(Segmentacion::parsedUri$query, entrenamientoSa ,numeroPalabraSa);
+	#numeroPalabraSv = entrenamientoValores(Segmentacion::parsedUri$query, entrenamientoSv ,numeroPalabraSv);
 
 
 	#evaluarProbabilidad(entrenamientoSs ,numeroPalabraSs);
@@ -683,14 +453,14 @@ event Input::end_of_data(name: string, source: string) {
 	#escribirArchivo(entrenamientoSa,"BsaPrueba");
 	#escribirArchivo(entrenamientoSv,"BsvPrueba");
 
-	print "----------------------------##----------------------------------------";
 
-	print BSsx;
-	print BSpx;
-	print BSax;
-	print BSvx;
 
-	print "----------------------------##----------------------------------------";
+	#print BSsx;
+	#print BSpx;
+	#print BSax;
+	#print BSvx;
+
+
 	#print numeroPalabraSs;
 	#print entrenamientoSs;
 	#print "---------------";
@@ -739,5 +509,7 @@ event Input::end_of_data(name: string, source: string) {
 event bro_done(){
 
 	print "ESTOY LISTO";
-
+	print Segmentacion::parsedUri;
+	Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+	print Segmentacion::parsedUri;
 }
