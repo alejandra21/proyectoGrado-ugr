@@ -4,33 +4,7 @@
 
 module HTTP;
 @load segmentacion
-
-#------------------------------------------------------------------------------#
-# 						REGISTROS PARA LOS VECTORES B
-#------------------------------------------------------------------------------#
-
-type Word: record {
-        word: string;
-};
-
-type Probability: record {
-        probability: double;
-};
-
-#------------------------------------------------------------------------------#
-# 						REGISTRO PARA LA MATRIZ A
-#------------------------------------------------------------------------------#
-
-type Column: record {
-        column: string;
-};
-
-type Rows: record {
-        Ssi: int;
-        Spi: int;
-        Sai: int;
-        Svi: int;
-};
+@load evaluacion
 
 #------------------------------------------------------------------------------#
 # 						REGISTRO USADO EN EL ENTRENAMIENTO
@@ -55,13 +29,13 @@ redef enum Log::ID += { LOG };
 
 #------------------------------------------------------------------------------#
 
-global BSsx: table[string] of Probability = table();
-global BSpx: table[string] of Probability = table();
-global BSax: table[string] of Probability = table();
-global BSvx: table[string] of Probability = table();
-global A: 	 table[string] of Rows = table();
+global BSsx: table[string] of Evaluacion::Probability = table();
+global BSpx: table[string] of Evaluacion::Probability = table();
+global BSax: table[string] of Evaluacion::Probability = table();
+global BSvx: table[string] of Evaluacion::Probability = table();
+global A: 	 table[string] of Evaluacion::Rows = table();
 
-global vectorProbabilidad: vector of table[string] of Probability = { BSsx , BSpx, BSvx , BSax };
+global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsx , BSpx, BSvx , BSax };
 
 #------------------------------------------------------------------------------#
 
@@ -86,197 +60,6 @@ global epsilon : double = 0.0001;
 global probA : int = 0;
 global theta: double = 5;
 
-
-#------------------------------------------------------------------------------#
-#			         FUNCIONES PARA EL MODULO DE EVALUACION                    #
-#------------------------------------------------------------------------------#
-
-function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability): double{
-
-	local results : double;
-
-	results = 0.0;
-
-	for ( i in wordList){
-
-		#print wordList[i];
-
-		if (wordList[i] in pVector){
-
-			#print "LA PALABRA ESTA";
-
-			# Se suma la probabilidad de la palabra que se encuentra en el
-			# diccionario.
-			results =  results + pVector[wordList[i]]$probability;
-
-		}
-		else{
-
-			#print "NO ESTA LA PALABRA";
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
-
-		}
-	}
-
-	return results;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability): double{
-
-	local results : double;
-
-	results = 0.0;
-
-	for ( [word] in wordList ){
-
-		#print "WORD";
-		#print word;
-
-		if (word in pVector){
-
-			#print "LA PALABRA ESTA";
-
-			# Se suma la probabilidad de la palabra que se encuentra en el
-			# diccionario.
-			results =  results + pVector[word]$probability;
-
-		}
-		else{
-
-			#print "NO ESTA LA PALABRA";
-
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
-
-		}
-	}
-
-	return results;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability): double{
-
-	local results : double;
-	results = 0.0;
-
-	for ( i in wordList){
-
-		print wordList[i];
-
-		if (wordList[i] in pVector){
-
-			print "LA PALABRA ESTA";
-
-			# Se suma la probabilidad de la palabra que se encuentra en el
-			# diccionario.
-			results =  results + pVector[wordList[i]]$probability;
-
-		}
-		else{
-
-			print "NO ESTA LA PALABRA";
-
-			# Se entra en este caso si la palabra no estaba en el vocabulario.
-			results = results + epsilon;
-
-		}
-
-	}
-	
-	return results;
-}
-
-#------------------------------------------------------------------------------#
-
-function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability): table[count] of double {
-
-	local host : double;
-	local path : double;
-	local valores : double;
-	local atributos : double;
-
-	host = evaluarHostPath(Segmentacion::parsedUri$host,pVector[0]);
-	path = evaluarHostPath(Segmentacion::parsedUri$path,pVector[1]);
-	valores = evaluarValores(Segmentacion::parsedUri$query,pVector[2]);
-	atributos = evaluarAtributos(Segmentacion::parsedUri$query,pVector[3]);
-
-	local results : table[count] of double = { [1] = host , 
-											   [2] = path, 
-											   [3] = valores, 
-											   [4] = atributos };
-
-	if (path == 0.0 && valores == 0.0 && atributos == 0.0){
-
-		# results = { host };
-		delete results[2];
-		delete results[3];
-		delete results[4];
-	
-	}
-	else if (valores == 0.0 && atributos == 0.0){
-
-		# results = { host , path };
-		delete results[3];
-		delete results[4];
-
-	}
-	else if (path == 0.0 ){
-
-		# results  = { host , valores , atributos };
-		delete results[2];
-
-	}
-
-	return results;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function calcularProbabilidad(vectorB: table[count] of double) : double {
-
-	local resultVectorB : double;
-	resultVectorB = 0.0;
-
-	# Se calcula la sumatoria de las probabilidades que contiene el vectorB
-	for (i in vectorB){
-
-		resultVectorB = resultVectorB + Math::logaritmo(vectorB[i]);
-	}
-
-	return resultVectorB;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function calcularIndiceAnormalidad(probabilidad: double) : double {
-
-	local indiceAnormalidad : double;
-	indiceAnormalidad = - (probabilidad);
-
-	return indiceAnormalidad;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function verifiarAnomalia(theta: double, indiceAnormalidad: double){
-
-	if (indiceAnormalidad >= theta){
-		print "EMITIR ALARMA";
-	}
-	else {
-		print "TODO ESTA NORMAL";
-	}
-}
 
 #------------------------------------------------------------------------------#
 #			            FUNCIONES PARA EL ENTRENAMIENTO                        #
@@ -412,24 +195,25 @@ event bro_init(){
 
 	print "Inicio";
 	# Se extraen de un archivo de texto los vectores de probabilidad B
-	#Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
-	#                      $idx=Word, $val=Probability, $destination=BSsx]);
+	Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
+	                      $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSsx]);
 
-	#Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
-	#                      $idx=Word, $val=Probability, $destination=BSpx]);
+	Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
+	                      $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSpx]);
 
-	#Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
-	#                      $idx=Word, $val=Probability, $destination=BSax]);
+	Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
+	                      $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSax]);
 
-	#Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
-	#                      $idx=Word, $val=Probability, $destination=BSvx]);
+	Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
+	                      $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSvx]);
 
-	#Input::add_table([$source="A", $name="A",
-    #                  $idx=Column, $val=Rows, $destination=A]);
+	Input::add_table([$source="A", $name="A",
+                      $idx=Evaluacion::Column, $val=Evaluacion::Rows, $destination=A]);
 
 	Segmentacion::parseHost("http://www.hola.com");
 	Segmentacion::parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-	#print Segmentacion::parsedUri;
+	print Segmentacion::parsedUri$host;
+	#Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,0.9);
 
 }
 
@@ -455,7 +239,7 @@ event Input::end_of_data(name: string, source: string) {
 
 
 
-	#print BSsx;
+	print BSsx;
 	#print BSpx;
 	#print BSax;
 	#print BSvx;
@@ -512,4 +296,5 @@ event bro_done(){
 	print Segmentacion::parsedUri;
 	Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 	print Segmentacion::parsedUri;
+
 }
