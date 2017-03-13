@@ -40,18 +40,13 @@ event bro_init(){
     Input::add_table([$source="A", $name="A",
                       $idx=Evaluacion::Column, $val=Evaluacion::Rows, $destination=A]);
 
-    Segmentacion::parseHost("http://www.hola.com");
-    Segmentacion::parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
-    Entrenamiento::entrenar(Segmentacion::parsedUri);
-    print "---------------##------";
-    print Entrenamiento::entrenamientoSs;
-    print "---------------";
-    print Entrenamiento::entrenamientoSp;
-    print "---------------";
-    print Entrenamiento::entrenamientoSa;
-    print "---------------";
-    print Entrenamiento::entrenamientoSv;
-    print "---------------##------";
+    Segmentacion::parseHost("https://www.google.es");
+    Segmentacion::parseUrl("/search?client=ubuntu&channel=fs&q=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
+    print Segmentacion::parsedUri;
+
+    #local queryUri : URI;
+    #queryUri = decompose_uri("?client=ubuntu&channel=fs&q=hacerarroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
+    #print queryUri$params;
 
 }
 

@@ -22,6 +22,14 @@ export {
 
 }
 
+
+#------------------------------------------------------------------------------#
+#                     		TABLA HTML ENCODING                                #
+#------------------------------------------------------------------------------#
+
+global encoding : table[string] of string = { ["+"] = "%20" , 
+                                              [" "] = "%20"};
+
 #------------------------------------------------------------------------------#
 #                     FUNCIONES PARA SEGMENTAR EL URI                          #
 #------------------------------------------------------------------------------#
@@ -58,26 +66,35 @@ function parsePath(url:string){
 
 function parseFragment(url:string){
 
-    local test_pattern = /\/#.*/;
-    local results = split(url, test_pattern);
-    if (|results| == 2){
+    if (url == ""){
 
-        if (results[1] == ""){
-
-            parsedUri$fragment = results[2];
-
-        }
-        else{
-
-            print "ERROR fragment 1!";
-            exit(0);    
-
-        }
+    	return;
 
     }
     else{
-        print "ERROR fragment 2!";
-        exit(0);        
+    	
+	    local test_pattern = /\/#.*/;
+	    local results = split(url, test_pattern);
+	    if (|results| == 2){
+
+	        if (results[1] == ""){
+
+	            parsedUri$fragment = results[2];
+
+	        }
+	        else{
+
+	            print "ERROR fragment 1!";
+	            exit(0);    
+
+	        }
+
+	    }
+	    else{
+	        print "ERROR fragment 2!";
+	        print url;
+	        exit(0);        
+	    }
     }
 
 }
@@ -86,35 +103,45 @@ function parseFragment(url:string){
 
 function parseQueryFragment(url:string){
 
-    local test_pattern = /\/\?([A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?(&[A-Za-z0-9_\-]+(=[A-Za-z0-9_\-]*)?)*)?/;
-    local results = split_all(url, test_pattern);
-    local queryUri : URI;
 
-    if (|results|==3){
+	if (url == ""){
 
-        queryUri = decompose_uri(results[2]);
-        parsedUri$query = queryUri$params;
+		return;
 
-        # Se verifica si el "fragment" hace match con la expresion regular
-        # correspondiente.
-        parseFragment(results[3]);
+	}
+	else {
 
-        #print parsedUri$query;
-        #print parsedUri$fragment;
+	    local test_pattern = /\/?\?([^"'\r\n><]+(=[^"'\r\n><]*)?(&[^"'\r\n><]+(=[^"'\r\n><]*)?)*)?/;
+	    local results = split_all(url, test_pattern);
+	    local queryUri : URI;
 
-    }
+	    if (|results|==3){
 
-    else if (|results|==2){
+	        queryUri = decompose_uri(results[2]);
+	        parsedUri$query = queryUri$params;
 
-        queryUri = decompose_uri(results[2]);
-        parsedUri$query = queryUri$params;
+	        # Se verifica si el "fragment" hace match con la expresion regular
+	        # correspondiente.
+	        parseFragment(results[3]);
 
-    }
-    else{
+	        #print parsedUri$query;
+	        #print parsedUri$fragment;
 
-        print "ERROR QUERY FRAGMENT";
-        exit(0);
-    }
+	    }
+
+	    else if (|results|==2){
+
+	        queryUri = decompose_uri(results[2]);
+	        parsedUri$query = queryUri$params;
+
+	    }
+	    else{
+
+	        print "ERROR QUERY FRAGMENT";
+	        exit(0);
+	    }
+
+	}
 
 }
 
@@ -191,33 +218,42 @@ function parseHost(url: string){
 
 function parseUrl(url: string) {
 
-    # Se parsea la ruta
-    local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
-    local results = split_all(url, test_pattern);
+	if (url == ""){
 
-    # El primer fragmento debe estar vacio
-    if ( results[1] != "" ){
-        print "ERROR PARSE URI 1";
-        print results[1];
-        return;
-        
-    }
+		return;
 
-    #El segundo fragmento contendra el host y la ruta correspondiente.
-    if (results[2] != ""){
-        parsePath(results[2]);        
-    }
+	}
+	else{
 
-    else {
-        print "ERROR PARSE URI 2";
-        return;
-    }
+	    # Se parsea la ruta
+	    local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
+	    local results = split_all(url, test_pattern);
 
-    # El tercer fragmento (opcional) contendrá los datos para realizar
-    # el query y el fragment.
-    if (results[3] != ""){
-        parseQueryFragment(results[3]);
-    }
+	    # El primer fragmento debe estar vacio
+	    if ( results[1] != "" ){
+	        print "ERROR PARSE URI 1";
+	        print results[1];
+	        return;
+	        
+	    }
+
+	    #El segundo fragmento contendra el host y la ruta correspondiente.
+	    if (results[2] != ""){
+	        parsePath(results[2]);        
+	    }
+
+	    else {
+	        print "ERROR PARSE URI 2";
+	        return;
+	    }
+
+	    # El tercer fragmento (opcional) contendrá los datos para realizar
+	    # el query y el fragment.
+	    if (results[3] != ""){
+	        parseQueryFragment(results[3]);
+	    }
+		
+	}
 
 }
 
