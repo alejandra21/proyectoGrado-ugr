@@ -389,7 +389,7 @@ function fragmentHost(url: string){
     }
     else{
 
-        local test_pattern = /\./;
+        local test_pattern = /\.|:/;
         local results = split(url, test_pattern);
         parsedUri$host = results;
 
@@ -430,7 +430,7 @@ function parseHost(url: string){
     urlResult = normalizarUri(urlResult);
 
     # Se parsea el host
-    local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)/;
+    local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(:([0-9]{1,5}))?/;
     local results = split_all(urlResult, test_pattern);
 
     # Se verifica si el host esta bien construido
@@ -442,6 +442,7 @@ function parseHost(url: string){
     else {
 
         print "ERROR EN HOST";
+        print results;
         exit(0);
 
     }
