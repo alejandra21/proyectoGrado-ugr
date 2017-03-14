@@ -45,6 +45,26 @@ function inicializarRecord(datos: uriSegmentado){
 
 #------------------------------------------------------------------------------#
 
+function normalizarUri(url: string): string {
+
+	local urlFinal: string = url;
+
+
+	# La complejidad es de O(n) siendo n el numero de elementos que hay en la 
+	# tabla encoding.
+	for (word in encoding){
+
+		if (word in urlFinal){
+			urlFinal = subst_string(urlFinal,word,encoding[word]);
+		}
+	
+	}
+
+	return urlFinal;
+}
+
+#------------------------------------------------------------------------------#
+
 function parsePath(url:string){
 
     # Se comprueba que exista un host con su ruta.
@@ -195,6 +215,9 @@ function parseHost(url: string){
     # Se extrae el squematic.
     local urlResult = returnUri(url);
 
+    # Se normaliza el formato del host.
+    urlResult = normalizarUri(urlResult);
+
     # Se parsea el host
     local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)/;
     local results = split_all(urlResult, test_pattern);
@@ -225,9 +248,13 @@ function parseUrl(url: string) {
 	}
 	else{
 
+		# Se normaliza el formato del URI.
+		local urlResult: string;
+		urlResult = normalizarUri(url);
+
 	    # Se parsea la ruta
 	    local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
-	    local results = split_all(url, test_pattern);
+	    local results = split_all(urlResult, test_pattern);
 
 	    # El primer fragmento debe estar vacio
 	    if ( results[1] != "" ){
