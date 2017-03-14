@@ -399,6 +399,27 @@ function fragmentHost(url: string){
 
 #------------------------------------------------------------------------------#
 
+function fragmentIp(ip: string){
+
+
+    if (ip == ""){
+
+        print "ERROR";
+        exit(0);
+
+    }
+    else{
+
+        local test_pattern = /:/;
+        local results = split(ip, test_pattern);
+        parsedUri$host = results;
+
+    }
+
+}
+
+#------------------------------------------------------------------------------#
+
 function returnUri(uri:string):string{
 
     local test_pattern = /(http(s)?:\/\/)?/;
@@ -420,6 +441,21 @@ function returnUri(uri:string):string{
 }
 
 #------------------------------------------------------------------------------#
+function verificarCorrectitudIp(ip: table[count] of string){
+
+	if (|ip| == 3 || ip[1] == "" || ip[3] == ""){
+
+		fragmentIp(ip[2]);
+
+	}
+	else {
+		print "ERROR EN HOST";
+		return;
+	}
+
+}
+
+#------------------------------------------------------------------------------#
 
 function parseHost(url: string){
 
@@ -431,6 +467,7 @@ function parseHost(url: string){
 
     # Se parsea el host
     local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(:([0-9]{1,5}))?/;
+    local ip_pattern = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:([0-9]{1,5}))?/;
     local results = split_all(urlResult, test_pattern);
 
     # Se verifica si el host esta bien construido
@@ -439,8 +476,17 @@ function parseHost(url: string){
         fragmentHost(results[2]);
 
     }
+    else if (|results| == 1){
+
+    	# Si el host no es un nombre de dominio se verifica si el mismo
+    	# corresponde a una direccion IP.
+    	results = split_all(urlResult, ip_pattern);
+    	verificarCorrectitudIp(results);
+
+    }
     else {
 
+    	# Existe algun error de sintaxis en el URI.
         print "ERROR EN HOST";
         print results;
         exit(0);
