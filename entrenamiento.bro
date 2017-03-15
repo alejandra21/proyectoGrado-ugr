@@ -69,6 +69,16 @@ global theta: double = 5;
 
 function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPalabras: double){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     for (i in vocabulario){
 
         # Se calcula la probabilidad de la palabra.
@@ -79,6 +89,16 @@ function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPal
 #------------------------------------------------------------------------------#
 
 function entrenamientoPathHost(wordList: table [count] of string, vocabulario: table[string] of Entrenamiento,numPalabras: double): double{
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     for (i in wordList){
 
@@ -110,6 +130,15 @@ function entrenamientoPathHost(wordList: table [count] of string, vocabulario: t
 
 function entrenamientoAtributos(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double{
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
     
     for (i in wordList){
 
@@ -143,6 +172,16 @@ function entrenamientoAtributos(wordList: table [string] of string, vocabulario:
 
 function entrenamientoValores(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double {
     
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     for ( [word] in wordList){
 
         if (word in vocabulario){
@@ -175,16 +214,51 @@ function entrenamientoValores(wordList: table [string] of string, vocabulario: t
 
 function entrenar(uriParsed: Segmentacion::uriSegmentado){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,numeroPalabraSs);
     numeroPalabraSp = entrenamientoPathHost(uriParsed$path, entrenamientoSp ,numeroPalabraSp);
     numeroPalabraSa = entrenamientoAtributos(uriParsed$query, entrenamientoSa ,numeroPalabraSa);
     numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,numeroPalabraSv);
+
+
+    print "---------------##------";
+    print numeroPalabraSs;
+    print entrenamientoSs;
+    print "---------------";
+    print numeroPalabraSp;
+    print entrenamientoSp;
+    print "---------------";
+    print numeroPalabraSa;
+    print entrenamientoSa;
+    print "---------------";
+    print numeroPalabraSv;
+    print entrenamientoSv;
+    print "---------------##------";
 
 }
 
 #------------------------------------------------------------------------------#
 
 function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchivo: string) {
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     # Se crea el archivo.
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);

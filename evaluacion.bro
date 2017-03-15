@@ -55,6 +55,16 @@ export {
 
 function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): double{
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local results : double;
 
     results = 0.0;
@@ -88,6 +98,16 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 #------------------------------------------------------------------------------#
 
 function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): double{
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     local results : double;
 
@@ -125,6 +145,16 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 
 function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability, epsilon : double): double{
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local results : double;
     results = 0.0;
 
@@ -158,6 +188,16 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 #------------------------------------------------------------------------------#
 
 function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability, epsilon: double): table[count] of double {
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     local host : double;
     local path : double;
@@ -204,6 +244,16 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of tabl
 
 function calcularProbabilidad(vectorB: table[count] of double) : double {
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local resultVectorB : double;
     resultVectorB = 0.0;
 
@@ -221,6 +271,16 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
 
 function calcularIndiceAnormalidad(probabilidad: double) : double {
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local indiceAnormalidad : double;
     indiceAnormalidad = - (probabilidad);
 
@@ -231,6 +291,16 @@ function calcularIndiceAnormalidad(probabilidad: double) : double {
 #------------------------------------------------------------------------------#
 
 function verifiarAnomalia(theta: double, indiceAnormalidad: double){
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     if (indiceAnormalidad >= theta){
         print "EMITIR ALARMA";

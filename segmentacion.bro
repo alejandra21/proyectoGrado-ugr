@@ -247,6 +247,16 @@ global encoding : table[string] of string = {	["+"]	=	"%20" ,
 
 function inicializarRecord(datos: uriSegmentado){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     datos$host = table();
     datos$path = table();
     datos$query = table();;
@@ -257,6 +267,16 @@ function inicializarRecord(datos: uriSegmentado){
 #------------------------------------------------------------------------------#
 
 function normalizarUri(url: string): string {
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
 	local urlFinal: string = url;
 
@@ -278,6 +298,16 @@ function normalizarUri(url: string): string {
 
 function parsePath(url:string){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     # Se comprueba que exista un host con su ruta.
     local test_pattern = /\//;
     local results = split(url, test_pattern);
@@ -296,6 +326,16 @@ function parsePath(url:string){
 #------------------------------------------------------------------------------#
 
 function parseFragment(url:string){
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     if (url == ""){
 
@@ -333,6 +373,16 @@ function parseFragment(url:string){
 #------------------------------------------------------------------------------#
 
 function parseQueryFragment(url:string){
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
 
 	if (url == ""){
@@ -380,6 +430,16 @@ function parseQueryFragment(url:string){
 
 function fragmentHost(url: string){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
 
     if (url == ""){
 
@@ -400,6 +460,16 @@ function fragmentHost(url: string){
 #------------------------------------------------------------------------------#
 
 function fragmentIp(ip: string){
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
 
     if (ip == ""){
@@ -422,6 +492,16 @@ function fragmentIp(ip: string){
 
 function returnUri(uri:string):string{
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local test_pattern = /(http(s)?:\/\/)?/;
     local results = split(uri,test_pattern);
 
@@ -443,6 +523,16 @@ function returnUri(uri:string):string{
 #------------------------------------------------------------------------------#
 function verificarCorrectitudIp(ip: table[count] of string){
 
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
+
 	if (|ip| == 3 || ip[1] == "" || ip[3] == ""){
 
 		fragmentIp(ip[2]);
@@ -458,6 +548,16 @@ function verificarCorrectitudIp(ip: table[count] of string){
 #------------------------------------------------------------------------------#
 
 function parseHost(url: string){
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     # Se extrae el squematic.
     local urlResult = returnUri(url);
@@ -498,6 +598,16 @@ function parseHost(url: string){
 #------------------------------------------------------------------------------#
 
 function parseUrl(url: string) {
+
+	# Descripción de la función: Clase Lexer.
+	#
+	# Variables de entrada:
+	#	* self : Corresponde a la instancia del objeto Lexer.
+	#	* data : Corresponde al input del Lexer.
+	#
+	# Variables de salida:
+	#	* Tokens : Lista de tokens correctos
+	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
 	if (url == ""){
 
