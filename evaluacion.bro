@@ -91,7 +91,8 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
         }
     }
 
-    return results;
+    # Se retorna el valor de epsilon sub cero.
+    return (results)/|wordList|;
 
 }
 
@@ -137,13 +138,14 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
         }
     }
 
-    return results;
+    # Se retorna el valor de epsilon sub cero.
+    return (results)/|wordList|;
 
 }
 
 #------------------------------------------------------------------------------#
 
-function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability, epsilon : double): double{
+function evaluarHostPath(wordList:table [count] of string, pVector: table[string] of Probability, epsilon : double): table[count] of double{
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -158,6 +160,11 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
     local results : double;
     results = 0.0;
 
+    local sumLogaritmos : double;
+    sumLogaritmos = 0.0;
+
+    local tablaEvaluacion: table[count] of double = table();
+
     for ( i in wordList){
 
         print wordList[i];
@@ -169,6 +176,7 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[wordList[i]]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[wordList[i]]$probability);
 
         }
         else{
@@ -177,12 +185,25 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
 
         }
 
     }
     
-    return results;
+    results = results /|wordList|;
+    print "Result";
+    print results;
+
+    print "sumLogaritmos";
+    print sumLogaritmos;
+
+
+    tablaEvaluacion[1] = results;
+    tablaEvaluacion[2] = sumLogaritmos;
+
+    # Se retorna el valor de epsilon sub cero.
+    return tablaEvaluacion;
 }
 
 #------------------------------------------------------------------------------#
@@ -204,20 +225,19 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of tabl
     local valores : double;
     local atributos : double;
 
-    host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
-    path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
+    print evaluarHostPath(uriParsed$host,pVector[0],epsilon);
+    print evaluarHostPath(uriParsed$path,pVector[1],epsilon);
     valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
     atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
 
-    local results : table[count] of double = { [1] = host , 
-                                               [2] = path, 
+    local results : table[count] of double = { 
                                                [3] = valores, 
                                                [4] = atributos };
 
     if (path == 0.0 && valores == 0.0 && atributos == 0.0){
 
         # results = { host };
-        delete results[2];
+        #delete results[2];
         delete results[3];
         delete results[4];
     
@@ -232,7 +252,7 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of tabl
     else if (path == 0.0 ){
 
         # results  = { host , valores , atributos };
-        delete results[2];
+        #delete results[2];
 
     }
 

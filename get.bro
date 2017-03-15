@@ -13,7 +13,7 @@ global BSsx: table[string] of Evaluacion::Probability = table();
 global BSpx: table[string] of Evaluacion::Probability = table();
 global BSax: table[string] of Evaluacion::Probability = table();
 global BSvx: table[string] of Evaluacion::Probability = table();
-global A:      table[string] of Evaluacion::Rows = table();
+global A:    table[string] of Evaluacion::Rows = table();
 
 global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsx , BSpx, BSvx , BSax };
 
@@ -40,9 +40,13 @@ event bro_init(){
     Input::add_table([$source="A", $name="A",
                       $idx=Evaluacion::Column, $val=Evaluacion::Rows, $destination=A]);
 
-    Segmentacion::parseHost("https://www.google.es");
-    Segmentacion::parseUrl("/search?client=ubuntu&channel=fs&q=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
-    print Segmentacion::parsedUri;
+    Segmentacion::parseHost("https://localhost:8080");
+    Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
+    #Entrenamiento::entrenar(Segmentacion::parsedUri);
+    #Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+
+    #Segmentacion::parseHost("http://192.168.1.1:8080");
+    #Segmentacion::parseUrl("/login?dst=http%3A%2F%2Fwww.testmysecurity.com%2Flogin%3Fdst%3Dhttp%253A%252F%252F192.168.1.1%252F");
 
     #local queryUri : URI;
     #queryUri = decompose_uri("?client=ubuntu&channel=fs&q=hacerarroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
@@ -124,11 +128,8 @@ event Input::end_of_data(name: string, source: string) {
     
 #    }
 
-#event bro_done(){
+event bro_done(){
 
-#    print "ESTOY LISTO";
-#    print Segmentacion::parsedUri;
-#    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-#    print Segmentacion::parsedUri;
-
-#}
+    print "LISTO";
+    print Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,0.001);
+}
