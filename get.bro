@@ -14,7 +14,6 @@ global BSpx: table[string] of Evaluacion::Probability = table();
 global BSax: table[string] of Evaluacion::Probability = table();
 global BSvx: table[string] of Evaluacion::Probability = table();
 global A:    table[string] of Evaluacion::Rows = table();
-
 global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsx , BSpx, BSvx , BSax };
 
 #------------------------------------------------------------------------------#
@@ -56,6 +55,7 @@ event bro_init(){
 
 event Input::end_of_data(name: string, source: string) {
 
+    event bro_done();
     #parseHost("http://www.hola.com");
     #parseUrl("/seniors/all_seniors/schs-paul/index.htm/?pepe=maria&juan=juana/#ref");
     #numeroPalabraSs = entrenamientoPathHost(Segmentacion::parsedUri$host, entrenamientoSs ,numeroPalabraSs);

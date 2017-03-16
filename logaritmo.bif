@@ -6,7 +6,7 @@ function logaritmo%(x: double%) : double
     #include <stdio.h>
     #include <math.h>
 
-    double result = log(x);
+    double result = log10(x);
     //printf("Resultado = ", result);
     
     return new Val(result, TYPE_DOUBLE);

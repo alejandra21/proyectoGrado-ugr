@@ -44,7 +44,7 @@ export {
 
     global evaluar: function(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability, epsilon: double): table[count] of double;
     global calcularProbabilidad: function(vectorB: table[count] of double) : double;
-    global calcularIndiceAnormalidad: function(probabilidad: double) : double;
+    global calcularIndiceAnormalidad: function(epsilon0: double, N: double, sumaLogaritmos: double) : double;
     global verifiarAnomalia: function(theta: double, indiceAnormalidad: double);
 
 }
@@ -53,7 +53,7 @@ export {
 #                     FUNCIONES PARA EL MODULO DE EVALUACION                   #
 #------------------------------------------------------------------------------#
 
-function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): double{
+function evaluarValores(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): table[count] of double{
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -66,8 +66,12 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
 	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     local results : double;
-
     results = 0.0;
+
+    local sumLogaritmos : double;
+    sumLogaritmos = 0.0;
+
+    local tablaEvaluacion: table[count] of double = table();
 
     for ( i in wordList){
 
@@ -80,6 +84,7 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[wordList[i]]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[wordList[i]]$probability);
 
         }
         else{
@@ -87,18 +92,25 @@ function evaluarValores(wordList:table[string] of string, pVector: table[string]
             #print "NO ESTA LA PALABRA";
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
 
         }
     }
 
+
+    results = results /|wordList|;
+
+    tablaEvaluacion[1] = results;
+    tablaEvaluacion[2] = sumLogaritmos;
+
     # Se retorna el valor de epsilon sub cero.
-    return (results)/|wordList|;
+    return tablaEvaluacion;
 
 }
 
 #------------------------------------------------------------------------------#
 
-function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): double{
+function evaluarAtributos(wordList:table[string] of string, pVector: table[string] of Probability, epsilon : double): table[count] of double{
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -111,8 +123,13 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
     local results : double;
-
     results = 0.0;
+
+    local sumLogaritmos : double;
+    sumLogaritmos = 0.0;
+
+    local tablaEvaluacion: table[count] of double = table();
+
 
     for ( [word] in wordList ){
 
@@ -126,6 +143,7 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[word]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[word]$probability);
 
         }
         else{
@@ -134,12 +152,18 @@ function evaluarAtributos(wordList:table[string] of string, pVector: table[strin
 
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
 
         }
     }
 
+    results = results /|wordList|;
+
+    tablaEvaluacion[1] = results;
+    tablaEvaluacion[2] = sumLogaritmos;
+
     # Se retorna el valor de epsilon sub cero.
-    return (results)/|wordList|;
+    return tablaEvaluacion;
 
 }
 
@@ -167,11 +191,11 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
     for ( i in wordList){
 
-        print wordList[i];
+        #print wordList[i];
 
         if (wordList[i] in pVector){
 
-            print "LA PALABRA ESTA";
+            #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -181,23 +205,17 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
         }
         else{
 
-            print "NO ESTA LA PALABRA";
+            #print "NO ESTA LA PALABRA";
 
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
-
+            
         }
 
     }
     
     results = results /|wordList|;
-    print "Result";
-    print results;
-
-    print "sumLogaritmos";
-    print sumLogaritmos;
-
 
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
@@ -208,7 +226,28 @@ function evaluarHostPath(wordList:table [count] of string, pVector: table[string
 
 #------------------------------------------------------------------------------#
 
-function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability, epsilon: double): table[count] of double {
+function calcularIndiceAnormalidad(epsilon0: double, N: double, sumaLogaritmos: double) : double {
+
+    # Descripción de la función: Clase Lexer.
+    #
+    # Variables de entrada:
+    #   * self : Corresponde a la instancia del objeto Lexer.
+    #   * data : Corresponde al input del Lexer.
+    #
+    # Variables de salida:
+    #   * Tokens : Lista de tokens correctos
+    #   * Errores : Lista de tokens con los errores lexicograficos encontrados
+
+    local indiceAnormalidad : double;
+    indiceAnormalidad = - (N * Math::logaritmo(epsilon0)) - sumaLogaritmos;
+
+    return indiceAnormalidad;
+
+}
+
+#------------------------------------------------------------------------------#
+
+function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of table[string] of Probability, epsilon: double): table[count] of double{
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -220,44 +259,35 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado, pVector: vector of tabl
 	#	* Tokens : Lista de tokens correctos
 	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
-    local host : double;
-    local path : double;
-    local valores : double;
-    local atributos : double;
+    local tablaIndiceAnormalidad : table[count] of double;
 
-    print evaluarHostPath(uriParsed$host,pVector[0],epsilon);
-    print evaluarHostPath(uriParsed$path,pVector[1],epsilon);
+    local host : table[count] of double;
+    local path : table[count] of double;
+    local valores : table[count] of double;
+    local atributos : table[count] of double;
+
+    local Nss : double;
+    local Nsp : double;
+    local Nsv : double;
+    local Nsa : double;
+
+    host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
+    path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
     valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
     atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
 
-    local results : table[count] of double = { 
-                                               [3] = valores, 
-                                               [4] = atributos };
+    print "INDICE DE ANORMALIDAD";
+    Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
+    Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
+    Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
+    Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
 
-    if (path == 0.0 && valores == 0.0 && atributos == 0.0){
+    tablaIndiceAnormalidad[1] = Nss ;
+    tablaIndiceAnormalidad[2] = Nsp ;
+    tablaIndiceAnormalidad[3] = Nsv ;
+    tablaIndiceAnormalidad[4] = Nsa ;
 
-        # results = { host };
-        #delete results[2];
-        delete results[3];
-        delete results[4];
-    
-    }
-    else if (valores == 0.0 && atributos == 0.0){
-
-        # results = { host , path };
-        delete results[3];
-        delete results[4];
-
-    }
-    else if (path == 0.0 ){
-
-        # results  = { host , valores , atributos };
-        #delete results[2];
-
-    }
-
-    return results;
-
+    return tablaIndiceAnormalidad;
 }
 
 #------------------------------------------------------------------------------#
@@ -284,27 +314,6 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
     }
 
     return resultVectorB;
-
-}
-
-#------------------------------------------------------------------------------#
-
-function calcularIndiceAnormalidad(probabilidad: double) : double {
-
-	# Descripción de la función: Clase Lexer.
-	#
-	# Variables de entrada:
-	#	* self : Corresponde a la instancia del objeto Lexer.
-	#	* data : Corresponde al input del Lexer.
-	#
-	# Variables de salida:
-	#	* Tokens : Lista de tokens correctos
-	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
-
-    local indiceAnormalidad : double;
-    indiceAnormalidad = - (probabilidad);
-
-    return indiceAnormalidad;
 
 }
 
