@@ -67,7 +67,8 @@ global theta: double = 5;
 #                        FUNCIONES PARA EL ENTRENAMIENTO                       #
 #------------------------------------------------------------------------------#
 
-function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPalabras: double){
+function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, 
+                             numPalabras: double) {
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -88,7 +89,9 @@ function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, numPal
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoPathHost(wordList: table [count] of string, vocabulario: table[string] of Entrenamiento,numPalabras: double): double{
+function entrenamientoPathHost(wordList: table [count] of string, 
+                                vocabulario: table[string] of Entrenamiento,
+                                numPalabras: double): double {
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -128,7 +131,9 @@ function entrenamientoPathHost(wordList: table [count] of string, vocabulario: t
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoAtributos(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double{
+function entrenamientoAtributos(wordList: table [string] of string, 
+                                vocabulario: table[string] of Entrenamiento, 
+                                numPalabras: double): double{
 
 	# Descripción de la función: Clase Lexer.
 	#
@@ -170,7 +175,9 @@ function entrenamientoAtributos(wordList: table [string] of string, vocabulario:
 
 #------------------------------------------------------------------------------#
 
-function entrenamientoValores(wordList: table [string] of string, vocabulario: table[string] of Entrenamiento, numPalabras: double): double {
+function entrenamientoValores(wordList: table [string] of string, 
+                              vocabulario: table[string] of Entrenamiento, 
+                              numPalabras: double): double {
     
 	# Descripción de la función: Clase Lexer.
 	#
@@ -224,10 +231,14 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
 	#	* Tokens : Lista de tokens correctos
 	#	* Errores : Lista de tokens con los errores lexicograficos encontrados
 
-    numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,numeroPalabraSs);
-    numeroPalabraSp = entrenamientoPathHost(uriParsed$path, entrenamientoSp ,numeroPalabraSp);
-    numeroPalabraSa = entrenamientoAtributos(uriParsed$query, entrenamientoSa ,numeroPalabraSa);
-    numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,numeroPalabraSv);
+    numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,
+                                            numeroPalabraSs);
+    numeroPalabraSp = entrenamientoPathHost(uriParsed$path, entrenamientoSp ,
+                                            numeroPalabraSp);
+    numeroPalabraSa = entrenamientoAtributos(uriParsed$query, entrenamientoSa ,
+                                            numeroPalabraSa);
+    numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,
+                                            numeroPalabraSv);
 
 
     print "---------------##------";
