@@ -8,13 +8,39 @@ module HTTP;
 @load entrenamiento
 
 #------------------------------------------------------------------------------#
+#                                 REGISTROS                                    #
+#------------------------------------------------------------------------------#
 
-global BSsx: table[string] of Evaluacion::Probability = table();
-global BSpx: table[string] of Evaluacion::Probability = table();
-global BSax: table[string] of Evaluacion::Probability = table();
-global BSvx: table[string] of Evaluacion::Probability = table();
+
+type Clave: record {
+
+        clave : string;
+};
+
+type Valor: record {
+
+        valor : string &default = "";
+};
+
+#------------------------------------------------------------------------------#
+#                             VARIABLES GLOBALES                               #
+#------------------------------------------------------------------------------#
+
+global modelo: table[string] of Valor;
+global BSsTable: table[string] of Evaluacion::Probability = table();
+global BSpTable: table[string] of Evaluacion::Probability = table();
+global BSaTable: table[string] of Evaluacion::Probability = table();
+global BSvTable: table[string] of Evaluacion::Probability = table();
 global A:    table[string] of Evaluacion::Rows = table();
-global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsx , BSpx, BSvx , BSax };
+global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsTable , BSpTable, BSvTable , BSaTable };
+
+# Claves del modelo.
+global Bss: string   = "Bss";
+global Bsp: string   = "Bsp";
+global Bsv: string   = "Bsv";
+global Bsa: string   = "Bsas";
+global Poov: string  = "Poov";
+global Theta: string = "Theta";
 
 #------------------------------------------------------------------------------#
 #                             EVENTO PRINCIPAL                                 #
@@ -23,29 +49,39 @@ global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = 
 event bro_init(){
 
     print "Inicio";
+    # Se leen los datos del modelo.
+    Input::add_table([$source="modelo", $name="modelo",
+                          $idx=Clave, $val=Valor, $destination=modelo]);
+
     # Se extraen de un archivo de texto los vectores de probabilidad B
-    Input::add_table([$source="BssPrueba.log", $name="BssPrueba.log",
-                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSsx]);
+    Input::add_table([$source=modelo[Bss]$valor, $name=modelo[Bss]$valor,
+                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
+                          $destination=BSsTable]);
 
-    Input::add_table([$source="BspPrueba.log", $name="BspPrueba.log",
-                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSpx]);
+    Input::add_table([$source=modelo[Bsp]$valor, $name=modelo[Bsp]$valor,
+                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
+                          $destination=BSpTable]);
 
-    Input::add_table([$source="BsaPrueba.log", $name="BsaPrueba.log",
-                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSax]);
+    Input::add_table([$source=modelo[Bsa]$valor, $name=modelo[Bsa]$valor,
+                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
+                          $destination=BSaTable]);
 
-    Input::add_table([$source="BsvPrueba.log", $name="BsvPrueba.log",
-                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, $destination=BSvx]);
+    Input::add_table([$source=modelo[Bsv]$valor, $name=modelo[Bsv]$valor,
+                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
+                          $destination=BSvTable]);
 
     Input::add_table([$source="A", $name="A",
                       $idx=Evaluacion::Column, $val=Evaluacion::Rows, $destination=A]);
 
     Segmentacion::parseHost("https://localhost:8080");
     Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
-    #Entrenamiento::entrenar(Segmentacion::parsedUri);
-    #Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+    Entrenamiento::entrenar(Segmentacion::parsedUri);
+    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 
-    #Segmentacion::parseHost("http://192.168.1.1:8080");
-    #Segmentacion::parseUrl("/login?dst=http%3A%2F%2Fwww.testmysecurity.com%2Flogin%3Fdst%3Dhttp%253A%252F%252F192.168.1.1%252F");
+    Segmentacion::parseHost("http://192.168.1.1:8080");
+    Segmentacion::parseUrl("/login?dst=http%3A%2F%2Fwww.testmysecurity.com%2Flogin%3Fdst%3Dhttp%253A%252F%252F192.168.1.1%252F");
+    Entrenamiento::entrenar(Segmentacion::parsedUri);
+
 
     #local queryUri : URI;
     #queryUri = decompose_uri("?client=ubuntu&channel=fs&q=hacerarroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
@@ -76,10 +112,10 @@ event Input::end_of_data(name: string, source: string) {
 
 
 
-    #print BSsx;
-    #print BSpx;
-    #print BSax;
-    #print BSvx;
+    #print BSsTable;
+    #print BSpTable;
+    #print BSaTable;
+    #print BSvTable;
 
 
     #print "---------------##------";
@@ -131,5 +167,6 @@ event Input::end_of_data(name: string, source: string) {
 event bro_done(){
 
     print "LISTO";
-    print Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,0.001);
+    print Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,
+                              to_double(modelo[Poov]$valor));
 }
