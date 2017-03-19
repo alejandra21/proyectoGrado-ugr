@@ -247,15 +247,15 @@ global encoding : table[string] of string = {    ["+"]    =    "%20" ,
 
 function inicializarRecord(datos: uriSegmentado){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Inicializa todos los campos de un registro de
+    #                            tipo "uriSegmentado".
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * datos : Registro a ser inicializado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
+
 
     datos$host = table();
     datos$path = table();
@@ -268,15 +268,15 @@ function inicializarRecord(datos: uriSegmentado){
 
 function normalizarUri(url: string): string {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Dado un URI esta funcion sustituye 
+    #                            ciertos caracteres por sus correspondiente
+    #                            codificacion UTF-8.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : URI a normalizar.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * urlFinal : URI normalizado.
 
     local urlFinal: string = url;
 
@@ -298,15 +298,16 @@ function normalizarUri(url: string): string {
 
 function parsePath(url:string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion, dada la ruta correspondiente a
+    #                            un URI, segmenta y almacena en una tabla cada 
+    #                            una de las palabras separadas por el 
+    #                            separador: "/".
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : Ruta de un URI que sera segmentada.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     # Se comprueba que exista un host con su ruta.
     local test_pattern = /\//;
@@ -327,15 +328,14 @@ function parsePath(url:string){
 
 function parseFragment(url:string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion, dada una palabra verifica si 
+    #                            la misma es el fragmen de un URI o no.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url :  Palabra a ser analizada.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     if (url == ""){
 
@@ -374,15 +374,15 @@ function parseFragment(url:string){
 
 function parseQueryFragment(url:string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que parsea y segmenta el query y
+    #                            fragment de un URI.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * uri : Palabra a ser parseada y segmentada.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Tokens : Ninguna.
+
 
 
     if (url == ""){
@@ -430,16 +430,15 @@ function parseQueryFragment(url:string){
 
 function fragmentHost(url: string){
 
-    # Descripción de la función: Clase Lexer.
-    #
+    # Descripción de la función: Esta funcion, dada la host correspondiente a
+    #                            un URI, segmenta y almacena en una tabla cada 
+    #                            una de las palabras separadas por el 
+    #                            separador: "." o ":".
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : Host de un URI que sera segmentado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
-
+    #    * Ninguna.
 
     if (url == ""){
 
@@ -461,16 +460,15 @@ function fragmentHost(url: string){
 
 function fragmentIp(ip: string){
 
-    # Descripción de la función: Clase Lexer.
-    #
+    # Descripción de la función: Esta funcion, dada la host correspondiente a
+    #                            un URI, segmenta y almacena en una tabla cada 
+    #                            una de las palabras separadas por el 
+    #                            separador: ":".
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : Host de un URI que sera segmentado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
-
+    #    * Ninguna.
 
     if (ip == ""){
 
@@ -492,15 +490,14 @@ function fragmentIp(ip: string){
 
 function returnUri(uri:string):string{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion, dado un URI con su 
+    #                            retorna el mismo sin el squeme.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * uri : URI de entrada.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * results[2]/results[1] : URI sin el squeme.
 
     local test_pattern = /(http(s)?:\/\/)?/;
     local results = split(uri,test_pattern);
@@ -523,15 +520,13 @@ function returnUri(uri:string):string{
 #------------------------------------------------------------------------------#
 function verificarCorrectitudIp(ip: table[count] of string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion parsea y segmenta una direccion ip.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * ip : Tabla que contiende la posible direccion ip.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     if (|ip| == 3 || ip[1] == "" || ip[3] == ""){
 
@@ -549,15 +544,14 @@ function verificarCorrectitudIp(ip: table[count] of string){
 
 function parseHost(url: string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que parsea, segmenta y almacena en una
+    #                            tabla el host de un URI.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : Host a ser parseado y segmentado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     # Se extrae el squematic.
     local urlResult = returnUri(url);
@@ -599,15 +593,14 @@ function parseHost(url: string){
 
 function parseUrl(url: string) {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que parsea, segmenta y almacena en una
+    #                            tabla el path, el query y el fragment de un URI.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * url : URI a ser parseado y segmentado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     if (url == ""){
 
