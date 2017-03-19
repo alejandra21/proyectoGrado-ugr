@@ -106,7 +106,10 @@ function evaluarValores(wordList:table[string] of string,
     }
 
 
-    results = results /|wordList|;
+    if (|wordList|!= 0){
+
+        results = results /|wordList|;
+    }
 
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
@@ -167,7 +170,10 @@ function evaluarAtributos(wordList:table[string] of string,
         }
     }
 
-    results = results /|wordList|;
+    if (|wordList|!= 0){
+
+        results = results /|wordList|;
+    }
 
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
@@ -227,7 +233,10 @@ function evaluarHostPath(wordList:table [count] of string,
 
     }
     
-    results = results /|wordList|;
+    if (|wordList|!= 0){
+
+        results = results /|wordList|;
+    }
 
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
