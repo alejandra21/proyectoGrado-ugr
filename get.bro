@@ -95,7 +95,7 @@ event Input::end_of_data(name: string, source: string) {
 event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
-    local vectorR: table[count] of double;
+    local indicesDeAnormalidad: table[count] of double;
     local probabilidad: double;
     local Ns: double;
 
@@ -105,8 +105,11 @@ event http_reply(c: connection, version: string, code: count, reason: string)
             print modelo;
             Segmentacion::parseHost(c$http$host);
             Segmentacion::parseUrl(c$http$uri);
-            print Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,
-                                to_double(modelo[Poov]$valor));
+            indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+                                                    vectorProbabilidad,
+                                                    to_double(modelo[Poov]$valor));
+
+            Evaluacion::verifiarAnomalia(to_double(modelo[Theta]$valor),indicesDeAnormalidad);
             Segmentacion::inicializarRecord(Segmentacion::parsedUri);
         }
     

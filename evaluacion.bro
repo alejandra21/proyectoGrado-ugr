@@ -51,7 +51,8 @@ export {
     global calcularIndiceAnormalidad: function(epsilon0: double, N: double, 
                                                 sumaLogaritmos: double) : double;
 
-    global verifiarAnomalia: function(theta: double, indiceAnormalidad: double);
+    global verifiarAnomalia: function(theta: double,
+                                      indicesAnormalidad: table[count] of double);
 
 }
 
@@ -343,7 +344,7 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
 
 #------------------------------------------------------------------------------#
 
-function verifiarAnomalia(theta: double, indiceAnormalidad: double){
+function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of double){
 
     # Descripción de la función: Clase Lexer.
     #
@@ -355,12 +356,17 @@ function verifiarAnomalia(theta: double, indiceAnormalidad: double){
     #    * Tokens : Lista de tokens correctos
     #    * Errores : Lista de tokens con los errores lexicograficos encontrados
 
-    if (indiceAnormalidad >= theta){
-        print "EMITIR ALARMA";
+    for (i in indicesAnormalidad){
+
+        if (indicesAnormalidad[i] >= theta){
+            print "EMITIR ALARMA";
+        }
+        else {
+            print "TODO ESTA NORMAL";
+        }
+  
     }
-    else {
-        print "TODO ESTA NORMAL";
-    }
+
 }
 
 #------------------------------------------------------------------------------#
