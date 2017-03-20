@@ -387,7 +387,8 @@ function parseQueryFragment(url:string){
 
     if (url == ""){
 
-        return;
+        local pathTable : table[count] of string = { [1] = "/" };            
+        parsedUri$path = pathTable;
 
     }
     else {
@@ -419,6 +420,7 @@ function parseQueryFragment(url:string){
         else{
 
             print "ERROR QUERY FRAGMENT";
+            print url;
             exit(0);
         }
 
@@ -490,8 +492,8 @@ function fragmentIp(ip: string){
 
 function returnUri(uri:string):string{
 
-    # Descripción de la función: Esta funcion, dado un URI con su 
-    #                            retorna el mismo sin el squeme.
+    # Descripción de la función: Esta funcion, dado un URI 
+    #                            retorna el mismo URI sin el squeme.
     #
     # Variables de entrada:
     #    * uri : URI de entrada.
@@ -614,9 +616,10 @@ function parseUrl(url: string) {
         urlResult = normalizarUri(url);
 
         # Se parsea la ruta
-        local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*/;
+        local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*\/?/;
         local results = split_all(urlResult, test_pattern);
 
+        print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
             print "ERROR PARSE URI 1";

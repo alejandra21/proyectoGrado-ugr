@@ -78,10 +78,13 @@ event bro_init(){
     Segmentacion::parseHost("https://localhost:8080");
     Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
     #Entrenamiento::entrenar(Segmentacion::parsedUri);
+    print Segmentacion::parsedUri;
+
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 
     Segmentacion::parseHost("http://192.168.1.1:8080");
-    Segmentacion::parseUrl("/login?dst=http%3A%2F%2Fwww.testmysecurity.com%2Flogin%3Fdst%3Dhttp%253A%252F%252F192.168.1.1%252F");
+    Segmentacion::parseUrl("");
+
     #Entrenamiento::entrenar(Segmentacion::parsedUri);
 
 }
@@ -101,8 +104,10 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
+            print "---------------##------";
             print "Estoy en GET";
-            print modelo;
+            print c$http$host;
+            print c$http$uri;
             Segmentacion::parseHost(c$http$host);
             Segmentacion::parseUrl(c$http$uri);
             indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
@@ -110,7 +115,11 @@ event http_reply(c: connection, version: string, code: count, reason: string)
                                                     to_double(modelo[Poov]$valor));
 
             Evaluacion::verifiarAnomalia(to_double(modelo[Theta]$valor),indicesDeAnormalidad);
+            print Segmentacion::parsedUri;
+            print indicesDeAnormalidad;
             Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+            print "---------------##------";
+
         }
     
     }

@@ -293,20 +293,24 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
     local Nss : double;
     local Nsp : double;
-    local Nsv : double;
-    local Nsa : double;
+    local Nsv : double = 0.0;
+    local Nsa : double = 0.0;
 
     host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
     path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
-    valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
-    atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
-
-    print "INDICE DE ANORMALIDAD";
     Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
     Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
-    Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
-    Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
 
+    if (|uriParsed$query| != 0){
+
+        valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
+        atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
+        Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
+        Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
+
+    }
+        
+    print "INDICE DE ANORMALIDAD";
     tablaIndiceAnormalidad[1] = Nss ;
     tablaIndiceAnormalidad[2] = Nsp ;
     tablaIndiceAnormalidad[3] = Nsv ;
