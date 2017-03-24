@@ -1,0 +1,92 @@
+module Modelo;
+
+function leerModelo%(s: string%) : string
+    %{
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <errno.h>
+    #include <string.h>
+
+    char* nombre_archivo = copy_string(s->CheckString());
+
+    // Declaracion de variables:
+    int i = 0;
+    char *clave;
+    char *valor;
+    char *stringResultado = "holis";
+    char resultado[500];
+    FILE *archivo;
+    //char *nombre_archivo = "modelo";
+    
+    if ( (archivo=fopen(nombre_archivo,"r")) == NULL) {
+
+        perror("Error: El archivo indicado no fue encontrado ");
+        printf("errno = %d. \n",errno);
+        exit(1);
+    }
+    
+    else {
+        
+        //archivo = fopen(nombre_archivo,"r");
+        fseek(archivo,0,SEEK_END);
+
+         if (ftell(archivo) == 0 )    {        
+               //El archivo esta vacio.
+               printf("---------------------------------.\n");
+               printf("El archivo de entrada esta vacio.\n");
+               printf("---------------------------------.\n");
+               exit(0);
+        }
+
+        else{
+
+            fseek(archivo,0,SEEK_SET);
+
+            // Se empieza a leer el archivo:
+            while(1){
+
+                // Se reserva el espacio de memoria para la nueva linea
+                clave = (char*)malloc(sizeof(char)*101);
+                valor = (char*)malloc(sizeof(char)*101);
+                fscanf(archivo, " %s %s\n" ,clave,valor);
+                printf("Esta es la clave: %s\n",clave);
+                printf("Esta es la valor: %s\n",valor);
+                
+
+                if (i==0){
+
+                    strcpy(resultado, "?");
+                    i++;
+                }
+                else{
+                    strcat(resultado, "&");
+                }
+
+                strcat(resultado, clave);
+                strcat(resultado, "=");
+                strcat(resultado, valor);
+
+                free(clave);
+                free(valor);
+                // Se verifica si se ha llegado al fin del archivo
+                if (feof(archivo)) {
+                    fclose(archivo);
+                    break;
+                    
+                }
+
+            }
+
+            printf("%s\n",resultado);
+
+        }
+            
+    }
+
+    stringResultado = copy_string(resultado);
+    
+    BroString* bs = new BroString(1, reinterpret_cast<byte_vec>(stringResultado),
+                                  strlen(stringResultado));
+    return new StringVal(bs);
+    %}
