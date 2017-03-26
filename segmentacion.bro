@@ -12,6 +12,7 @@ export {
         path: table [count] of string;
         query: table[string] of string &default = table();
         fragment: string &default = "";
+        uriCorrecto: bool &default = T;
 
     };
 
@@ -261,6 +262,7 @@ function inicializarRecord(datos: uriSegmentado){
     datos$path = table();
     datos$query = table();;
     datos$fragment = "";
+    datos$uriCorrecto = T;
 
 }
 
@@ -310,17 +312,28 @@ function parsePath(url:string){
     #    * Ninguna.
 
     # Se comprueba que exista un host con su ruta.
-    local test_pattern = /\//;
-    local results = split(url, test_pattern);
 
-    # Se elimina el primer elemento.
-    if (results[1] == ""){
+    if (url == "/" || url == ""){
+
+      local path: table [count] of string = {[1] = "/"};
+      parsedUri$path = path;
+
+    }
+    else{
+
+      local test_pattern = /\//;
+      local results = split(url, test_pattern);
+
+      # Se elimina el primer elemento.
+      if (results[1] == ""){
 
         delete results[1];
 
-    }
+      }
 
-    parsedUri$path = results;
+      parsedUri$path = results;
+
+    }
 
 }
 
@@ -356,15 +369,17 @@ function parseFragment(url:string){
             else{
 
                 print "ERROR fragment 1!";
-                exit(0);    
+                parsedUri$uriCorrecto = F;
+                return;    
 
             }
 
         }
         else{
+
             print "ERROR fragment 2!";
-            print url;
-            exit(0);        
+            parsedUri$uriCorrecto = F;
+            return;       
         }
     }
 
@@ -381,9 +396,7 @@ function parseQueryFragment(url:string){
     #    * uri : Palabra a ser parseada y segmentada.
     #
     # Variables de salida:
-    #    * Tokens : Ninguna.
-
-
+    #    * Ninguna.
 
     if (url == ""){
 
@@ -406,9 +419,6 @@ function parseQueryFragment(url:string){
             # correspondiente.
             parseFragment(results[3]);
 
-            #print parsedUri$query;
-            #print parsedUri$fragment;
-
         }
 
         else if (|results|==2){
@@ -420,8 +430,8 @@ function parseQueryFragment(url:string){
         else{
 
             print "ERROR QUERY FRAGMENT";
-            print url;
-            exit(0);
+            parsedUri$uriCorrecto = F;
+            return;
         }
 
     }
@@ -445,7 +455,8 @@ function fragmentHost(url: string){
     if (url == ""){
 
         print "ERROR";
-        exit(0);
+        parsedUri$uriCorrecto = F;
+        return;
 
     }
     else{
@@ -475,7 +486,8 @@ function fragmentIp(ip: string){
     if (ip == ""){
 
         print "ERROR";
-        exit(0);
+        parsedUri$uriCorrecto = F;
+        return;
 
     }
     else{
@@ -501,21 +513,31 @@ function returnUri(uri:string):string{
     # Variables de salida:
     #    * results[2]/results[1] : URI sin el squeme.
 
-    local test_pattern = /(http(s)?:\/\/)?/;
+    
+    local test_pattern = /:\/\//;
     local results = split(uri,test_pattern);
 
     if (|results| == 2){
-        return results[2];
-    }
-    else if (|results| == 1){
-        return results[1];
+
+      if (/^[hH][tT][tT][pP][sS]?/ in results[1]){
+
+            return results[2];
+
+      }
+      else{
+
+            print "ERROR RETURN URI!";
+            parsedUri$uriCorrecto = F;
+            return "";
+
+      }
+
     }
     else{
 
-        print "ERROR RETURN URI!";
-        exit(0);
-    }
+            return results[1];
 
+    }
 
 }
 
@@ -530,13 +552,14 @@ function verificarCorrectitudIp(ip: table[count] of string){
     # Variables de salida:
     #    * Ninguna.
 
-    if (|ip| == 3 || ip[1] == "" || ip[3] == ""){
+    if (|ip| == 3 && ip[1] == "" && ip[3] == ""){
 
         fragmentIp(ip[2]);
 
     }
     else {
         print "ERROR EN HOST";
+        parsedUri$uriCorrecto = F;
         return;
     }
 
@@ -558,34 +581,43 @@ function parseHost(url: string){
     # Se extrae el squematic.
     local urlResult = returnUri(url);
 
-    # Se normaliza el formato del host.
-    urlResult = normalizarUri(urlResult);
+    print urlResult;
+    if (urlResult!= ""){
 
-    # Se parsea el host
-    local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(:([0-9]{1,5}))?/;
-    local ip_pattern = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:([0-9]{1,5}))?/;
-    local results = split_all(urlResult, test_pattern);
+          # Se normaliza el formato del host.
+          urlResult = normalizarUri(urlResult);
 
-    # Se verifica si el host esta bien construido
-    if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
+          # Se parsea el host
+          local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(:([0-9]{1,5}))?/;
+          local ip_pattern = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:([0-9]{1,5}))?/;
+          local results = split_all(urlResult, test_pattern);
+          # Se verifica si el host esta bien construido
+          if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
 
-        fragmentHost(results[2]);
+              fragmentHost(results[2]);
+
+          }
+          else if (|results| == 1){
+
+              # Si el host no es un nombre de dominio se verifica si el mismo
+              # corresponde a una direccion IP.
+              results = split_all(urlResult, ip_pattern);
+              verificarCorrectitudIp(results);
+
+          }
+          else {
+
+            # Existe algun error de sintaxis en el URI.
+            print "ERROR EN HOST";
+            parsedUri$uriCorrecto = F;
+            return;
+
+          }
 
     }
-    else if (|results| == 1){
+    else{
 
-        # Si el host no es un nombre de dominio se verifica si el mismo
-        # corresponde a una direccion IP.
-        results = split_all(urlResult, ip_pattern);
-        verificarCorrectitudIp(results);
-
-    }
-    else {
-
-        # Existe algun error de sintaxis en el URI.
-        print "ERROR EN HOST";
-        print results;
-        exit(0);
+      return;
 
     }
 
@@ -604,7 +636,7 @@ function parseUrl(url: string) {
     # Variables de salida:
     #    * Ninguna.
 
-    if (url == ""){
+    if (url == "" || parsedUri$uriCorrecto == F){
 
         return;
 
@@ -622,19 +654,24 @@ function parseUrl(url: string) {
         print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
+
             print "ERROR PARSE URI 1";
-            print results[1];
+            parsedUri$uriCorrecto = F;
             return;
+
             
         }
 
         #El segundo fragmento contendra el host y la ruta correspondiente.
         if (results[2] != ""){
+
             parsePath(results[2]);        
         }
 
         else {
+
             print "ERROR PARSE URI 2";
+            parsedUri$uriCorrecto = F;
             return;
         }
 

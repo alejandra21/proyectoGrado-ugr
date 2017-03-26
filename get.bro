@@ -37,10 +37,10 @@ global A:    table[string] of Evaluacion::Rows = table();
 global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsTable , BSpTable, BSvTable , BSaTable };
 
 # Claves del modelo.
-global Bss: string   = "BssPrueba.log";
-global Bsp: string   = "BspPrueba.log";
-global Bsv: string   = "BsvPrueba.log";
-global Bsa: string   = "BsaPrueba.log";
+global Bss: string   = "Bss";
+global Bsp: string   = "Bsp";
+global Bsv: string   = "Bsv";
+global Bsa: string   = "Bsa";
 global Poov: string  = "Poov";
 global Theta: string = "Theta";
 
@@ -76,24 +76,6 @@ event bro_init(){
                         $idx=Evaluacion::Word, 
                         $val=Evaluacion::Probability, 
                         $destination=BSvTable]);
-
-
-    Segmentacion::parseHost("https://localhost:8080");
-    Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
-    #Entrenamiento::entrenar(Segmentacion::parsedUri);
-    print Segmentacion::parsedUri;
-
-    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-
-    Segmentacion::parseHost("http://192.168.1.1:8080");
-    Segmentacion::parseUrl("");
-
-    print "---------------##------";
-    print decompose_uri("?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA")$params;
-    print "---------------##------";
-
-
-    #Entrenamiento::entrenar(Segmentacion::parsedUri);
 
 }
 
@@ -137,10 +119,6 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
 event bro_done(){
 
-    print "LISTO";
-    print modelo;
-    #print to_double(modelo[Poov]$valor);
-    #print Evaluacion::evaluar(Segmentacion::parsedUri,vectorProbabilidad,to_double(modelo[Poov]$valor));
 }
 
 #------------------------------------------------------------------------------#
