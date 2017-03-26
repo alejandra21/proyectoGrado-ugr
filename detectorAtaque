@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Se comprueba si el numero de flags introducidos es correcto.
+if [ ${#@} -gt '1' ]
+	then
+		echo "Ha introducido mas flags de los debidos."
+		exit 1
+	fi
+
+# read the options
+TEMP=`getopt -o et --long evl,training -- "$@"`
+eval set -- "$TEMP"
+
+# extract options and their arguments into variables.
+while true ; do
+    case "$1" in
+        -e|--evl)  bro -r http.pcap mainEvaluacion.bro; exit 1 ;;
+        -t|--training) bro -r http.pcap mainEntrenamiento.bro; exit 1 ;;
+        --) shift ; break ;;
+        *) echo "Internal error!" ; exit 1 ;;
+    esac
+done
+
