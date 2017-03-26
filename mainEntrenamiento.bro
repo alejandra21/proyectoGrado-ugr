@@ -45,45 +45,43 @@ global Poov: string  = "Poov";
 global Theta: string = "Theta";
 
 #------------------------------------------------------------------------------#
+#                                FUNCIONES                                     #
+#------------------------------------------------------------------------------#
+
+function entrenamiento(host: string, uri: string){
+
+
+    if (Entrenamiento::finalizarEntrenamiento == F){
+
+        print "---------------##------";
+        print "Estoy en GET";
+        Segmentacion::parseHost(host);
+        Segmentacion::parseUrl(uri);
+        print Segmentacion::parsedUri;
+        Entrenamiento::entrenar(Segmentacion::parsedUri);
+        Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+        print "---------------##------";
+    
+    }
+
+    else {
+
+        event bro_done();
+
+    }
+
+}
+
+#------------------------------------------------------------------------------#
 #                             EVENTO PRINCIPAL                                 #
 #------------------------------------------------------------------------------#
 
 event bro_init(){
 
-    print "Inicio";
-    # Se leen los datos del modelo.
-
-    # Robustecer cuando leo los datos
-    stringModelo  = decompose_uri(Modelo::leerModelo("modelo"));
-    modelo = stringModelo$params;
-
-    # Se extraen de un archivo de texto los vectores de probabilidad B
-    Input::add_table([$source=modelo[Bss], $name=modelo[Bss],
-                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
-                          $destination=BSsTable]);
-
-    Input::add_table([$source=modelo[Bsp], $name=modelo[Bsp],
-                          $idx=Evaluacion::Word, 
-                          $val=Evaluacion::Probability,
-                          $destination=BSpTable]);
-
-    Input::add_table([$source=modelo[Bsa], $name=modelo[Bsa],
-                          $idx=Evaluacion::Word, 
-                          $val=Evaluacion::Probability, 
-                          $destination=BSaTable]);
-
-    Input::add_table([$source=modelo[Bsv], $name=modelo[Bsv],
-                        $idx=Evaluacion::Word, 
-                        $val=Evaluacion::Probability, 
-                        $destination=BSvTable]);
-
+    print "Iniciando entrenamiento...";
 }
 
 #------------------------------------------------------------------------------#
-
-event Input::end_of_data(name: string, source: string) {
-
-}
 
 event http_reply(c: connection, version: string, code: count, reason: string)
     {
@@ -91,30 +89,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
-            local indicesDeAnormalidad: table[count] of double;
-            local probabilidad: double;
-            local Ns: double;
-
-            if (Entrenamiento::finalizarEntrenamiento == F){
-
-                print "---------------##------";
-                print "Estoy en GET";
-                print c$http$host;
-                print c$http$uri;
-                Segmentacion::parseHost(c$http$host);
-                Segmentacion::parseUrl(c$http$uri);
-                print Segmentacion::parsedUri;
-                Entrenamiento::entrenar(Segmentacion::parsedUri);
-                Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-                print "---------------##------";
-        
-            }
-
-            else {
-
-                event bro_done();
-
-            }
+            entrenamiento(c$http$host,c$http$uri);
 
         }
     
@@ -124,6 +99,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
 event bro_done(){
 
+    print "Finalizacion del entrenamiento...";
     exit(0);
 
 }
