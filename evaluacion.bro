@@ -56,6 +56,9 @@ export {
 
 }
 
+global infinito: double = 100000000;
+global alarmaEmitida: bool = F;
+
 #------------------------------------------------------------------------------#
 #                     FUNCIONES PARA EL MODULO DE EVALUACION                   #
 #------------------------------------------------------------------------------#
@@ -296,25 +299,51 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     local Nsv : double = 0.0;
     local Nsa : double = 0.0;
 
-    host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
-    path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
-    Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
-    Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
+    # Como se evaluara un nuevo URI el flag de alarmas emitida se inicializara
+    # en False.
 
-    if (|uriParsed$query| != 0){
+    alarmaEmitida = F;
 
-        valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
-        atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
-        Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
-        Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
+    if (uriParsed$uriCorrecto){
+
+        host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
+        path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
+
+        # Se calculan los indices de anormalidad del host y del path
+        Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
+        Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
+
+        # Si el URI posee query se calcula el indice de anormalidad tanto de
+        # los valores como los atributos de los mismos.
+        if (|uriParsed$query| != 0){
+
+            valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
+            atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
+
+            # Se calculan los indices de anormalidad del los valores y atributos
+            # del query.
+            Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
+            Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
+
+        }
+            
+        print "INDICE DE ANORMALIDAD";
+        tablaIndiceAnormalidad[1] = Nss ;
+        tablaIndiceAnormalidad[2] = Nsp ;
+        tablaIndiceAnormalidad[3] = Nsv ;
+        tablaIndiceAnormalidad[4] = Nsa ;
 
     }
-        
-    print "INDICE DE ANORMALIDAD";
-    tablaIndiceAnormalidad[1] = Nss ;
-    tablaIndiceAnormalidad[2] = Nsp ;
-    tablaIndiceAnormalidad[3] = Nsv ;
-    tablaIndiceAnormalidad[4] = Nsa ;
+
+    else{
+
+        tablaIndiceAnormalidad[1] = infinito ;
+        tablaIndiceAnormalidad[2] = infinito ;
+        tablaIndiceAnormalidad[3] = infinito ;
+        tablaIndiceAnormalidad[4] = infinito ;
+
+    }
+
 
     return tablaIndiceAnormalidad;
 }
@@ -362,11 +391,15 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of doub
 
     for (i in indicesAnormalidad){
 
-        if (indicesAnormalidad[i] >= theta){
+        # Si el indice de anormalidad es mayor o igual que theta, y no se han
+        # emitido alarmas anteriores para el uri que se esta evaluando, entonces
+        # se disparara una alerta.
+        if (indicesAnormalidad[i] >= theta && alarmaEmitida == F){
             print "EMITIR ALARMA";
+            alarmaEmitida = T;
         }
         else {
-            print "TODO ESTA NORMAL";
+            print "NO HACER NADA";
         }
   
     }
