@@ -77,25 +77,6 @@ event bro_init(){
                         $val=Evaluacion::Probability, 
                         $destination=BSvTable]);
 
-    local indicesDeAnormalidad: table[count] of double;
-    local probabilidad: double;
-    local Ns: double;
-
-    Segmentacion::parseHost("https://localhost:8080");
-    Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
-    #Entrenamiento::entrenar(Segmentacion::parsedUri);
-    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-
-    Segmentacion::parseHost("http:/192.168.1.1:8080");
-    Segmentacion::parseUrl("/login?dst=http%3A%2F%2Fwww.testmysecurity.com%2Flogin%3Fdst%3Dhttp%253A%252F%252F192.168.1.1%252F");
-
-    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-                                            vectorProbabilidad,
-                                            to_double(modelo[Poov]));
-
-    Evaluacion::verifiarAnomalia(to_double(modelo[Theta]),indicesDeAnormalidad);
-    print indicesDeAnormalidad;
-    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 }
 
 #------------------------------------------------------------------------------#
@@ -114,21 +95,26 @@ event http_reply(c: connection, version: string, code: count, reason: string)
             local probabilidad: double;
             local Ns: double;
 
-            print "---------------##------";
-            print "Estoy en GET";
-            print c$http$host;
-            print c$http$uri;
-            Segmentacion::parseHost(c$http$host);
-            Segmentacion::parseUrl(c$http$uri);
-            indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-                                                    vectorProbabilidad,
-                                                    to_double(modelo[Poov]));
+            if (Entrenamiento::finalizarEntrenamiento == F){
 
-            Evaluacion::verifiarAnomalia(to_double(modelo[Theta]),indicesDeAnormalidad);
-            print Segmentacion::parsedUri;
-            print indicesDeAnormalidad;
-            Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-            print "---------------##------";
+                print "---------------##------";
+                print "Estoy en GET";
+                print c$http$host;
+                print c$http$uri;
+                Segmentacion::parseHost(c$http$host);
+                Segmentacion::parseUrl(c$http$uri);
+                print Segmentacion::parsedUri;
+                Entrenamiento::entrenar(Segmentacion::parsedUri);
+                Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+                print "---------------##------";
+        
+            }
+
+            else {
+
+                event bro_done();
+
+            }
 
         }
     
@@ -137,6 +123,8 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 #------------------------------------------------------------------------------#
 
 event bro_done(){
+
+    exit(0);
 
 }
 

@@ -325,9 +325,15 @@ function parsePath(url:string){
       local results = split(url, test_pattern);
 
       # Se elimina el primer elemento.
-      if (results[1] == ""){
+      if (|results| == 3 && results[1] == "" && results[3] == ""){
 
         delete results[1];
+        delete results[3];
+
+      }
+      else if (results[1] == ""){
+
+            delete results[1];
 
       }
 
