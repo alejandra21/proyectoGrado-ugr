@@ -54,8 +54,8 @@ function evaluarUri(host: string, uri: string){
     local probabilidad: double;
     local Ns: double;
 
-    print "---------------##------";
-    print "Estoy en GET";
+    #print "---------------##------";
+    #print "Estoy en GET";
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
     indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
@@ -63,10 +63,10 @@ function evaluarUri(host: string, uri: string){
                                             to_double(modelo[Poov]));
 
     Evaluacion::verifiarAnomalia(to_double(modelo[Theta]),indicesDeAnormalidad);
-    print Segmentacion::parsedUri;
-    print indicesDeAnormalidad;
+    #print Segmentacion::parsedUri;
+    #print indicesDeAnormalidad;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-    print "---------------##------";
+    #print "---------------##------";
 
 }
 
@@ -104,12 +104,22 @@ event bro_init(){
                         $val=Evaluacion::Probability, 
                         $destination=BSvTable]);
 
+    Segmentacion::parseHost("https://localhost:8080");
+    Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
+    #print Segmentacion::parsedUri;
+    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+    Segmentacion::parseHost("http://192.168.1.1:8080");
+    #print Segmentacion::parsedUri;
+    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+
 }
 
 #------------------------------------------------------------------------------#
 
 event Input::end_of_data(name: string, source: string) {
 
+    print "LEI LOS ARCHIVOS";
+    print BSsTable;
 }
 
 #------------------------------------------------------------------------------#

@@ -519,32 +519,27 @@ function returnUri(uri:string):string{
     # Variables de salida:
     #    * results[2]/results[1] : URI sin el squeme.
 
-    
-    local test_pattern = /:\/\//;
+    local test_pattern = /(http(s)?:\/\/)?/;
     local results = split(uri,test_pattern);
 
     if (|results| == 2){
 
-      if (/^[hH][tT][tT][pP][sS]?/ in results[1]){
+        return results[2];
 
-            return results[2];
+    }
+    else if (|results| == 1){
 
-      }
-      else{
-
-            print "ERROR RETURN URI!";
-            parsedUri$uriCorrecto = F;
-            return "";
-
-      }
+        return results[1];
 
     }
     else{
 
-            return results[1];
+      print "ERROR RETURN URI!";
+      parsedUri$uriCorrecto = F;
+      return "";
 
     }
-
+    
 }
 
 #------------------------------------------------------------------------------#
@@ -587,7 +582,6 @@ function parseHost(url: string){
     # Se extrae el squematic.
     local urlResult = returnUri(url);
 
-    print urlResult;
     if (urlResult!= ""){
 
           # Se normaliza el formato del host.
@@ -597,6 +591,7 @@ function parseHost(url: string){
           local test_pattern = /(([a-z]+[a-z0-9\-]*[.])?([a-z0-9]+[a-z0-9\-]*[.])+[a-z]{2,3}|localhost)(:([0-9]{1,5}))?/;
           local ip_pattern = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(:([0-9]{1,5}))?/;
           local results = split_all(urlResult, test_pattern);
+
           # Se verifica si el host esta bien construido
           if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
 
@@ -623,6 +618,8 @@ function parseHost(url: string){
     }
     else{
 
+      # Hubo un error con el squematic que ya fue detectado en la funcion
+      # returnUri.
       return;
 
     }
@@ -657,7 +654,6 @@ function parseUrl(url: string) {
         local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*\/?/;
         local results = split_all(urlResult, test_pattern);
 
-        print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
