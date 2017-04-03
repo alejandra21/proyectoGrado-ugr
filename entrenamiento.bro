@@ -35,13 +35,18 @@ export{
 
 
     global entrenar: function(uriParsed: Segmentacion::uriSegmentado);
+    global escribirArchivo: function(vocabulario: table[count] of table[string] of Entrenamiento);
 
     # Tablas que almacenan el vocabulario de cada uno de los estados del automata
     global entrenamientoSs: table[string] of Entrenamiento = table();
     global entrenamientoSp: table[string] of Entrenamiento = table();
     global entrenamientoSa: table[string] of Entrenamiento = table();
     global entrenamientoSv: table[string] of Entrenamiento = table();
-    global finalizarEntrenamiento : bool = F;
+
+    global tablaEntrenamieto : table[count] of table[string] of Entrenamiento = {[1] = entrenamientoSs, 
+                                                  [2] = entrenamientoSp,
+                                                  [3] = entrenamientoSa,
+                                                  [4] = entrenamientoSv };
 
 }
 
@@ -224,7 +229,7 @@ function entrenamientoValores(wordList: table [string] of string,
 #------------------------------------------------------------------------------#
 
 
-function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchivo: string) {
+function escribirArchivo(vocabulario: table[count] of table[string] of Entrenamiento) {
 
     # Descripción de la función: Clase Lexer.
     #
@@ -238,7 +243,7 @@ function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchi
 
     # Se crea el archivo.
 
-    print vocabulario;
+    local nombreArchivo = "modeloBro";
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
 
     # Se incializa el registro que se utilizara para escribir sobre el 
@@ -246,23 +251,22 @@ function escribirArchivo(vocabulario: table[string] of Entrenamiento,nombreArchi
     local rec: Info;
     rec = Info();
 
-    # Se itera sobre las palabras del vocabulario para guardarlas en el log.
-    for (palabra in vocabulario){
+    # Se itera sobre el vector de tablas que contienen la informacion obtenida
+    # durante el entrenamiento.
+    for (i in vocabulario){
 
-        rec$word = palabra;
-        rec$probability = vocabulario[palabra]$probability;
+        # Se itera sobre las palabras del vocabulario para guardarlas en el log.
+        for (palabra in vocabulario[i]){
 
-        # Se escribe en el archivo
-        Log::write(LOG, rec);
+            rec$word = palabra;
+            rec$probability = vocabulario[i][palabra]$probability;
+
+            # Se escribe en el archivo
+            Log::write(LOG, rec);
+            
+        }
+
     }
-
-}
-
-#------------------------------------------------------------------------------#
-
-event bro_done(){
-
-    exit(0);
 
 }
 
@@ -280,13 +284,6 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
     #    * Tokens : Lista de tokens correctos
     #    * Errores : Lista de tokens con los errores lexicograficos encontrados
 
-    local nombreLogs : table[count] of string = {[1] = "Bss", [2] = "Bsp", 
-                                           [3] = "Bsa", [4] = "Bsv"};
-
-    local tablaEntrenamieto : table[count] of table[string] of Entrenamiento = {[1] = entrenamientoSs, 
-                                                  [2] = entrenamientoSp,
-                                                  [3] = entrenamientoSa,
-                                                  [4] = entrenamientoSv };
 
     numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,
                                             numeroPalabraSs);
@@ -296,32 +293,6 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
                                             numeroPalabraSa);
     numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,
                                             numeroPalabraSv);
-
-
-    # Si se han procesado el numero maximos de URIs a procesar se procedera
-    # a escribir en los archivos correspondientes.
-    ++numeroUriProcesado;
-
-    if (numeroUriProcesado >= maxNumeroUri){
-
-        # Se escribe en los archivos correspondientes a los vectores B.
-        for (i in nombreLogs){
-
-            print "---------------##------";
-            print tablaEntrenamieto[i];
-            print nombreLogs[i];
-            print "---------------##------";
-            escribirArchivo(tablaEntrenamieto[i], nombreLogs[i]);
-
-        }
-
-        # Se finaliza el entrenamiento.
-        finalizarEntrenamiento = T;
-
-        # El programa finalizara en 3 segundos.
-        #schedule 3 sec { bro_done() };
-
-    }
 
 }
 

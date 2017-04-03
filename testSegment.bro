@@ -67,7 +67,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
-            print c;
+            print "";
 
         }
     

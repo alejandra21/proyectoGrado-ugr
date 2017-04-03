@@ -51,24 +51,17 @@ global Theta: string = "Theta";
 function entrenamiento(host: string, uri: string){
 
 
-    if (Entrenamiento::finalizarEntrenamiento == F){
 
-        print "---------------##------";
-        print "Estoy en GET";
-        Segmentacion::parseHost(host);
-        Segmentacion::parseUrl(uri);
-        print Segmentacion::parsedUri;
-        Entrenamiento::entrenar(Segmentacion::parsedUri);
-        Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-        print "---------------##------";
+    print "---------------##------";
+    print "Estoy en GET";
+    Segmentacion::parseHost(host);
+    Segmentacion::parseUrl(uri);
+    print Segmentacion::parsedUri;
+    Entrenamiento::entrenar(Segmentacion::parsedUri);
+    Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+    print "---------------##------";
     
-    }
-
-    else {
-
-        event bro_done();
-
-    }
+    
 
 }
 
@@ -91,7 +84,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
             entrenamiento(c$http$host,c$http$uri);
 
-        }
+    }
     
     }
 
@@ -100,7 +93,8 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 event bro_done(){
 
     print "Finalizacion del entrenamiento...";
-    exit(0);
+    Entrenamiento::escribirArchivo(Entrenamiento::tablaEntrenamieto);
+    #exit(0);
 
 }
 
