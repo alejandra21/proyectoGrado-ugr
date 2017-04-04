@@ -29,12 +29,7 @@ type Valor: record {
 global stringModelo: URI;
 global modelo : table[string] of string;
 global modelTable: table[string] of string;
-global BSsTable: table[string] of Evaluacion::Probability = table();
-global BSpTable: table[string] of Evaluacion::Probability = table();
-global BSaTable: table[string] of Evaluacion::Probability = table();
-global BSvTable: table[string] of Evaluacion::Probability = table();
-global A:    table[string] of Evaluacion::Rows = table();
-global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsTable , BSpTable, BSvTable , BSaTable };
+global Btable: table[string,string] of Evaluacion::Probability = table();
 
 # Claves del modelo.
 global Bss: string   = "Bss";
@@ -58,9 +53,9 @@ function evaluarUri(host: string, uri: string){
     #print "Estoy en GET";
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
-    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-                                            vectorProbabilidad,
-                                            to_double(modelo[Poov]));
+    #indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+    #                                        vectorProbabilidad,
+    #                                        to_double(modelo[Poov]));
 
     Evaluacion::verifiarAnomalia(to_double(modelo[Theta]),indicesDeAnormalidad);
     #print Segmentacion::parsedUri;
@@ -83,26 +78,10 @@ event bro_init(){
     stringModelo  = decompose_uri(Modelo::leerModelo("modelo"));
     modelo = stringModelo$params;
 
-
     # Se extraen de un archivo de texto los vectores de probabilidad B
-    Input::add_table([$source=modelo[Bss], $name=modelo[Bss],
+    Input::add_table([$source="modeloBro.log", $name="modeloBro.log",
                           $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
-                          $destination=BSsTable]);
-
-    Input::add_table([$source=modelo[Bsp], $name=modelo[Bsp],
-                          $idx=Evaluacion::Word, 
-                          $val=Evaluacion::Probability,
-                          $destination=BSpTable]);
-
-    Input::add_table([$source=modelo[Bsa], $name=modelo[Bsa],
-                          $idx=Evaluacion::Word, 
-                          $val=Evaluacion::Probability, 
-                          $destination=BSaTable]);
-
-    Input::add_table([$source=modelo[Bsv], $name=modelo[Bsv],
-                        $idx=Evaluacion::Word, 
-                        $val=Evaluacion::Probability, 
-                        $destination=BSvTable]);
+                          $destination=Btable]);
 
     Segmentacion::parseHost("https://localhost:8080");
     Segmentacion::parseUrl("/search?client=ùbuntu&channel=fs&q%42=hacer+arroz&ie=utf-8&oe=utf-8&gfe_rd=cr&ei=LNrGWOjdK-eJ8QeOzoaQBA");
@@ -119,7 +98,7 @@ event bro_init(){
 event Input::end_of_data(name: string, source: string) {
 
     print "LEI LOS ARCHIVOS";
-    print BSsTable;
+    print Btable;
 }
 
 #------------------------------------------------------------------------------#
@@ -130,7 +109,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
-            evaluarUri(c$http$host,c$http$uri);
+            #evaluarUri(c$http$host,c$http$uri);
 
         }
     

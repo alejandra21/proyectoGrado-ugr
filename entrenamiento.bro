@@ -20,9 +20,9 @@ type Entrenamiento: record {
 # Define the record type that will contain the data to log.
 type Info: record {
 
+        state: string &log &default = "";
         word : string &log &default = "";
         probability: double &log &default = 0.0;
-        state: string &log &default = "";
 };
 
 # Create an ID for our new stream
