@@ -44,7 +44,7 @@ export {
     #--------------------------------------------------------------------------#
 
     global evaluar: function(uriParsed: Segmentacion::uriSegmentado, 
-                            pVector: vector of table[string] of Probability,
+                            Bvector: table[string,string] of Probability,
                             epsilon: double): table[count] of double;
 
     global calcularProbabilidad: function(vectorB: table[count] of double) : double;
@@ -65,8 +65,8 @@ global alarmaEmitida: bool = F;
 #------------------------------------------------------------------------------#
 
 function evaluarValores(wordList:table[string] of string, 
-                        pVector: table[string] of Probability, 
-                        epsilon : double): table[count] of double{
+                        pVector: table[string,string] of Probability, 
+                        epsilon : double, estado:string): table[count] of double{
 
     # Descripción de la función: Clase Lexer.
     #
@@ -90,14 +90,14 @@ function evaluarValores(wordList:table[string] of string,
 
         #print wordList[i];
 
-        if (wordList[i] in pVector){
+        if ([estado,wordList[i]] in pVector){
 
             #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
-            results =  results + pVector[wordList[i]]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[wordList[i]]$probability);
+            results =  results + pVector[estado,wordList[i]]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,wordList[i]]$probability);
 
         }
         else{
@@ -127,8 +127,8 @@ function evaluarValores(wordList:table[string] of string,
 #------------------------------------------------------------------------------#
 
 function evaluarAtributos(wordList:table[string] of string,
-                          pVector: table[string] of Probability, 
-                          epsilon : double): table[count] of double{
+                          pVector: table[string,string] of Probability, 
+                          epsilon : double, estado:string): table[count] of double{
 
     # Descripción de la función: Clase Lexer.
     #
@@ -154,14 +154,14 @@ function evaluarAtributos(wordList:table[string] of string,
         #print "WORD";
         #print word;
 
-        if (word in pVector){
+        if ([estado,word] in pVector){
 
             #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
-            results =  results + pVector[word]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[word]$probability);
+            results =  results + pVector[estado,word]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,word]$probability);
 
         }
         else{
@@ -191,8 +191,8 @@ function evaluarAtributos(wordList:table[string] of string,
 #------------------------------------------------------------------------------#
 
 function evaluarHostPath(wordList:table [count] of string, 
-                        pVector: table[string] of Probability, 
-                        epsilon : double): table[count] of double{
+                        pVector: table[string,string] of Probability, 
+                        epsilon : double, estado:string): table[count] of double{
 
     # Descripción de la función: Clase Lexer.
     #
@@ -216,14 +216,14 @@ function evaluarHostPath(wordList:table [count] of string,
 
         #print wordList[i];
 
-        if (wordList[i] in pVector){
+        if ([estado,wordList[i]] in pVector){
 
             #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
-            results =  results + pVector[wordList[i]]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[wordList[i]]$probability);
+            results =  results + pVector[estado,wordList[i]]$probability;
+            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,wordList[i]]$probability);
 
         }
         else{
@@ -275,7 +275,7 @@ function calcularIndiceAnormalidad(epsilon0: double, N: double,
 #------------------------------------------------------------------------------#
 
 function evaluar(uriParsed: Segmentacion::uriSegmentado, 
-                pVector: vector of table[string] of Probability, 
+                Bvector: table[string,string] of Probability, 
                 epsilon: double): table[count] of double{
 
     # Descripción de la función: Clase Lexer.
@@ -295,10 +295,15 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     local valores : table[count] of double;
     local atributos : table[count] of double;
 
-    local Nss : double;
-    local Nsp : double;
+    local Nss : double = 0.0;
+    local Nsp : double = 0.0;
     local Nsv : double = 0.0;
     local Nsa : double = 0.0;
+
+    local Bss = "Bss";
+    local Bsp = "Bsp";
+    local Bsa = "Bsa";
+    local Bsv = "Bsv";
 
     # Como se evaluara un nuevo URI el flag de alarmas emitida se inicializara
     # en False.
@@ -307,8 +312,8 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
     if (uriParsed$uriCorrecto){
 
-        host = evaluarHostPath(uriParsed$host,pVector[0],epsilon);
-        path = evaluarHostPath(uriParsed$path,pVector[1],epsilon);
+        host = evaluarHostPath(uriParsed$host,Bvector,epsilon,Bss);
+        path = evaluarHostPath(uriParsed$path,Bvector,epsilon,Bsp);
 
         # Se calculan los indices de anormalidad del host y del path
         Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
@@ -318,8 +323,8 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
         # los valores como los atributos de los mismos.
         if (|uriParsed$query| != 0){
 
-            valores = evaluarValores(uriParsed$query,pVector[2],epsilon);
-            atributos = evaluarAtributos(uriParsed$query,pVector[3],epsilon);
+            valores = evaluarValores(uriParsed$query,Bvector,epsilon,Bsv);
+            atributos = evaluarAtributos(uriParsed$query,Bvector,epsilon,Bsa);
 
             # Se calculan los indices de anormalidad del los valores y atributos
             # del query.

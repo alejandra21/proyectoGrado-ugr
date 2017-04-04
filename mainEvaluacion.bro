@@ -53,15 +53,15 @@ function evaluarUri(host: string, uri: string){
     #print "Estoy en GET";
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
-    #indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-    #                                        vectorProbabilidad,
-    #                                        to_double(modelo[Poov]));
+    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+                                            Btable,
+                                            to_double(modelo[Poov]));
 
     Evaluacion::verifiarAnomalia(to_double(modelo[Theta]),indicesDeAnormalidad);
-    #print Segmentacion::parsedUri;
-    #print indicesDeAnormalidad;
+    print Segmentacion::parsedUri;
+    print indicesDeAnormalidad;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-    #print "---------------##------";
+    print "---------------##------";
 
 }
 
@@ -109,7 +109,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
-            #evaluarUri(c$http$host,c$http$uri);
+            evaluarUri(c$http$host,c$http$uri);
 
         }
     
