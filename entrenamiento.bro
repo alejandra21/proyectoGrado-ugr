@@ -22,6 +22,7 @@ type Info: record {
 
         word : string &log &default = "";
         probability: double &log &default = 0.0;
+        state: string &log &default = "";
 };
 
 # Create an ID for our new stream
@@ -43,10 +44,12 @@ export{
     global entrenamientoSa: table[string] of Entrenamiento = table();
     global entrenamientoSv: table[string] of Entrenamiento = table();
 
+
     global tablaEntrenamieto : table[count] of table[string] of Entrenamiento = {[1] = entrenamientoSs, 
-                                                  [2] = entrenamientoSp,
-                                                  [3] = entrenamientoSa,
-                                                  [4] = entrenamientoSv };
+                                                      [2] = entrenamientoSp,
+                                                      [3] = entrenamientoSa,
+                                                      [4] = entrenamientoSv };
+
 
 }
 
@@ -61,7 +64,6 @@ global numeroPalabraSp : double = 0.0;
 global numeroPalabraSv : double = 0.0;
 global numeroPalabraSa : double = 0.0;
 global numeroUriProcesado : int = 0;
-global maxNumeroUri : int = 2;
 
 
 #------------------------------------------------------------------------------#
@@ -154,6 +156,7 @@ function entrenamientoAtributos(wordList: table [string] of string,
     #    * Tokens : Lista de tokens correctos
     #    * Errores : Lista de tokens con los errores lexicograficos encontrados
     
+
     for (i in wordList){
 
         if (wordList[i] in vocabulario){
@@ -197,6 +200,7 @@ function entrenamientoValores(wordList: table [string] of string,
     # Variables de salida:
     #    * Tokens : Lista de tokens correctos
     #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+
 
     for ( [word] in wordList){
 
@@ -243,8 +247,12 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
     # Se crea el archivo.
 
+    local tablaEstados: table[count] of string = { [1] = "Bss", [2] = "Bsp",
+                                                    [3] = "Bsa", [4] = "Bsv"};
     local nombreArchivo = "modeloBro";
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
+
+
 
     # Se incializa el registro que se utilizara para escribir sobre el 
     # archivo.
@@ -260,6 +268,7 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
             rec$word = palabra;
             rec$probability = vocabulario[i][palabra]$probability;
+            rec$state = tablaEstados[i];
 
             # Se escribe en el archivo
             Log::write(LOG, rec);
