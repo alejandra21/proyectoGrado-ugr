@@ -30,22 +30,16 @@ export {
     #                         REGISTRO PARA LA MATRIZ A
     #--------------------------------------------------------------------------#
 
-    type Column: record {
-            column: string;
-    };
+    type Valor: record {
 
-    type Rows: record {
-            Ssi: int;
-            Spi: int;
-            Sai: int;
-            Svi: int;
+            valor: double;
     };
 
     #--------------------------------------------------------------------------#
 
     global evaluar: function(uriParsed: Segmentacion::uriSegmentado, 
                             Bvector: table[string,string] of Probability,
-                            epsilon: double): table[count] of double;
+                            vectorPoov: table[string] of Valor): table[count] of double;
 
     global calcularProbabilidad: function(vectorB: table[count] of double) : double;
 
@@ -276,7 +270,7 @@ function calcularIndiceAnormalidad(epsilon0: double, N: double,
 
 function evaluar(uriParsed: Segmentacion::uriSegmentado, 
                 Bvector: table[string,string] of Probability, 
-                epsilon: double): table[count] of double{
+                vectorPoov: table[string] of Valor): table[count] of double{
 
     # Descripción de la función: Clase Lexer.
     #
@@ -307,24 +301,26 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
     # Como se evaluara un nuevo URI el flag de alarmas emitida se inicializara
     # en False.
-
     alarmaEmitida = F;
 
+    # Si el URI posee una sintaxis correcta se procede a calcular los indices
+    # de anormalidad.
     if (uriParsed$uriCorrecto){
 
-        host = evaluarHostPath(uriParsed$host,Bvector,epsilon,Bss);
-        path = evaluarHostPath(uriParsed$path,Bvector,epsilon,Bsp);
+        host = evaluarHostPath(uriParsed$host,Bvector,vectorPoov["Poov1"]$valor,Bss);
+        path = evaluarHostPath(uriParsed$path,Bvector,vectorPoov["Poov2"]$valor,Bsp);
 
         # Se calculan los indices de anormalidad del host y del path
         Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
         Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
 
+
         # Si el URI posee query se calcula el indice de anormalidad tanto de
         # los valores como los atributos de los mismos.
         if (|uriParsed$query| != 0){
 
-            valores = evaluarValores(uriParsed$query,Bvector,epsilon,Bsv);
-            atributos = evaluarAtributos(uriParsed$query,Bvector,epsilon,Bsa);
+            valores = evaluarValores(uriParsed$query,Bvector,vectorPoov["Poov3"]$valor,Bsv);
+            atributos = evaluarAtributos(uriParsed$query,Bvector,vectorPoov["Poov4"]$valor,Bsa);
 
             # Se calculan los indices de anormalidad del los valores y atributos
             # del query.
@@ -333,14 +329,14 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
         }
             
-        print "INDICE DE ANORMALIDAD";
         tablaIndiceAnormalidad[1] = Nss ;
         tablaIndiceAnormalidad[2] = Nsp ;
         tablaIndiceAnormalidad[3] = Nsv ;
         tablaIndiceAnormalidad[4] = Nsa ;
 
     }
-
+    # Si el URI no posee una sintaxis correcta, entonces,  
+    # se asignara como indice de anormalidad un valor muy alto.
     else{
 
         tablaIndiceAnormalidad[1] = infinito ;
