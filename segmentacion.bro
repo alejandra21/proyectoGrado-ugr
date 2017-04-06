@@ -648,10 +648,13 @@ function parseUrl(url: string) {
 
         # Se normaliza el formato del URI.
         local urlResult: string;
+
         urlResult = normalizarUri(url);
 
+        print urlResult;
+
         # Se parsea la ruta
-        local test_pattern = /(\/[a-z0-9_-]+[a-z0-9_.-]*)*\/?/;
+        local test_pattern = /[^?#"'\r\n><]*\/?/;
         local results = split_all(urlResult, test_pattern);
 
         # El primer fragmento debe estar vacio

@@ -40,17 +40,18 @@ function evaluarUri(host: string, uri: string){
     local probabilidad: double;
     local Ns: double;
 
-    print "---------------##------";
-
-    #print "Estoy en GET";
+    print "---------------##------------------------------------";
+    print host;
+    print uri;
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
-    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-                                                Btable,config);
+    #indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+    #                                            Btable,config);
 
-    Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+    #Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+    print Segmentacion::parsedUri;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-    print "---------------##------";
+    print "---------------##------------------------------------";
 
 }
 
