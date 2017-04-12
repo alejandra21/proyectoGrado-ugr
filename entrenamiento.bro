@@ -63,7 +63,6 @@ global numeroPalabraSs : double = 0.0;
 global numeroPalabraSp : double = 0.0;
 global numeroPalabraSv : double = 0.0;
 global numeroPalabraSa : double = 0.0;
-global numeroUriProcesado : int = 0;
 
 
 #------------------------------------------------------------------------------#
@@ -81,15 +80,19 @@ global theta: double = 5;
 function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, 
                              numPalabras: double) {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion, dada una tabla  que contiene una 
+    #                            lista de palabras y el numero de apariciones que 
+    #                            han tenido las mismas, calcula la probabilidad
+    #                            de aparicion del cada una de las palabras.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * vocabulario : Tabla que contiene un listado de palabras y el numero
+    #                    de apaiciones de las mismas.
+    #    * numPalabras : Suma del numero de apariciones de todas las palabras de
+    #                    la tabla.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     for (i in vocabulario){
 
@@ -104,15 +107,28 @@ function entrenamientoPathHost(wordList: table [count] of string,
                                 vocabulario: table[string] of Entrenamiento,
                                 numPalabras: double): double {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion itera sobre la tabla de palabras
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
 
     for (i in wordList){
 
@@ -135,6 +151,8 @@ function entrenamientoPathHost(wordList: table [count] of string,
     
     }
 
+    # Se calcula la probabilidad de aparicion de cada una de las palabras de la
+    # tabla "vocabulario".
     evaluarProbabilidad(vocabulario, numPalabras);
 
     return numPalabras;
@@ -146,15 +164,28 @@ function entrenamientoAtributos(wordList: table [string] of string,
                                 vocabulario: table[string] of Entrenamiento, 
                                 numPalabras: double): double{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion itera sobre la tabla de palabras
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
     
 
     for (i in wordList){
@@ -191,15 +222,28 @@ function entrenamientoValores(wordList: table [string] of string,
                               vocabulario: table[string] of Entrenamiento, 
                               numPalabras: double): double {
     
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion itera sobre las claves de la tabla
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
 
 
     for ( [word] in wordList){
@@ -235,15 +279,19 @@ function entrenamientoValores(wordList: table [string] of string,
 
 function escribirArchivo(vocabulario: table[count] of table[string] of Entrenamiento) {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion se encarga de escribir en un log
+    #                            la informacion almacenada en la tabla
+    #                            "vocabulario".
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #
+    #    * vocabulario : Tabla que almacena varias tablas que contienen las 
+    #                    palabras onservadas durante el entrenamiento y la 
+    #                    probabilidad de aparicion de las mismas.
+    #                       
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     # Se crea el archivo.
 
@@ -283,15 +331,15 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
 function entrenar(uriParsed: Segmentacion::uriSegmentado){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Se encarga de llamar a todas las funciones
+    #                            correspondientes para realizar el 
+    #                            entrenamiento.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * uriParsed : Estructura que contiene el URI segmentado.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
 
     numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,

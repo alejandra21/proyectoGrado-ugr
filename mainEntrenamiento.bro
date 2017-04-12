@@ -33,7 +33,6 @@ global BSsTable: table[string] of Evaluacion::Probability = table();
 global BSpTable: table[string] of Evaluacion::Probability = table();
 global BSaTable: table[string] of Evaluacion::Probability = table();
 global BSvTable: table[string] of Evaluacion::Probability = table();
-global A:    table[string] of Evaluacion::Rows = table();
 global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsTable , BSpTable, BSvTable , BSaTable };
 
 # Claves del modelo.
@@ -51,9 +50,20 @@ global Theta: string = "Theta";
 function entrenamiento(host: string, uri: string){
 
 
+    # Descripción de la función: Clase Lexer.
+    #
+    # Variables de entrada:
+    #    * self : Corresponde a la instancia del objeto Lexer.
+    #    * data : Corresponde al input del Lexer.
+    #
+    # Variables de salida:
+    #    * Tokens : Lista de tokens correctos
+    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
 
     print "---------------##------";
     print "Estoy en GET";
+    print host;
+    print uri;
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
     print Segmentacion::parsedUri;

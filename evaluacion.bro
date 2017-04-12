@@ -52,6 +52,7 @@ export {
 }
 
 global infinito: double = 100000000;
+redef enum Notice::Type += { Umbral_Anomalia };
 global alarmaEmitida: bool = F;
 
 #------------------------------------------------------------------------------#
@@ -62,15 +63,23 @@ function evaluarValores(wordList:table[string] of string,
                         pVector: table[string,string] of Probability, 
                         epsilon : double, estado:string): table[count] of double{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Se itera sobre las palabras contenidas en la 
+    #                           tabla wordList para calcular tanto la suma de sus
+    #                           probabilidades de aparicion como la suma del los
+    #                           logaritmos de la probabilidad de aparicion.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * wordList : Tabla que contiene una lista de palabras. 
+    #    * pVector  : Tabla que contiene una lista de palabras y sus probabilidades
+    #                 de aparicion.
+    #    * epsilon  : Valor correspondiente al Poov.
+    #    * estado   : Estado del automata que se esta evaluando
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    *  tablaEvaluacion: Tabla que contiene el resultado de la suma de las 
+    #                        probabilidades de aparicion de las palabras como la 
+    #                        suma del los logaritmos de la probabilidad de aparicion.
+ 
 
     local results : double;
     results = 0.0;
@@ -82,11 +91,7 @@ function evaluarValores(wordList:table[string] of string,
 
     for ( i in wordList){
 
-        #print wordList[i];
-
         if ([estado,wordList[i]] in pVector){
-
-            #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -96,7 +101,6 @@ function evaluarValores(wordList:table[string] of string,
         }
         else{
 
-            #print "NO ESTA LA PALABRA";
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
@@ -124,15 +128,22 @@ function evaluarAtributos(wordList:table[string] of string,
                           pVector: table[string,string] of Probability, 
                           epsilon : double, estado:string): table[count] of double{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Se itera sobre las palabras contenidas en la 
+    #                           tabla wordList para calcular tanto la suma de sus
+    #                           probabilidades de aparicion como la suma del los
+    #                           logaritmos de la probabilidad de aparicion.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * wordList : Tabla que contiene una lista de palabras. 
+    #    * pVector  : Tabla que contiene una lista de palabras y sus probabilidades
+    #                 de aparicion.
+    #    * epsilon  : Valor correspondiente al Poov.
+    #    * estado   : Estado del automata que se esta evaluando
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    *  tablaEvaluacion: Tabla que contiene el resultado de la suma de las 
+    #                        probabilidades de aparicion de las palabras como la 
+    #                        suma del los logaritmos de la probabilidad de aparicion.
 
     local results : double;
     results = 0.0;
@@ -145,12 +156,7 @@ function evaluarAtributos(wordList:table[string] of string,
 
     for ( [word] in wordList ){
 
-        #print "WORD";
-        #print word;
-
         if ([estado,word] in pVector){
-
-            #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -159,8 +165,6 @@ function evaluarAtributos(wordList:table[string] of string,
 
         }
         else{
-
-            #print "NO ESTA LA PALABRA";
 
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
@@ -188,15 +192,22 @@ function evaluarHostPath(wordList:table [count] of string,
                         pVector: table[string,string] of Probability, 
                         epsilon : double, estado:string): table[count] of double{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Se itera sobre las palabras contenidas en la 
+    #                           tabla wordList para calcular tanto la suma de sus
+    #                           probabilidades de aparicion como la suma del los
+    #                           logaritmos de la probabilidad de aparicion.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * wordList : Tabla que contiene una lista de palabras. 
+    #    * pVector  : Tabla que contiene una lista de palabras y sus probabilidades
+    #                 de aparicion.
+    #    * epsilon  : Valor correspondiente al Poov.
+    #    * estado   : Estado del automata que se esta evaluando
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    *  tablaEvaluacion: Tabla que contiene el resultado de la suma de las 
+    #                        probabilidades de aparicion de las palabras como la 
+    #                        suma del los logaritmos de la probabilidad de aparicion.
 
     local results : double;
     results = 0.0;
@@ -208,11 +219,7 @@ function evaluarHostPath(wordList:table [count] of string,
 
     for ( i in wordList){
 
-        #print wordList[i];
-
         if ([estado,wordList[i]] in pVector){
-
-            #print "LA PALABRA ESTA";
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -221,8 +228,6 @@ function evaluarHostPath(wordList:table [count] of string,
 
         }
         else{
-
-            #print "NO ESTA LA PALABRA";
 
             # Se entra en este caso si la palabra no estaba en el vocabulario.
             results = results + epsilon;
@@ -249,15 +254,16 @@ function evaluarHostPath(wordList:table [count] of string,
 function calcularIndiceAnormalidad(epsilon0: double, N: double, 
                                     sumaLogaritmos: double) : double {
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que calcula el indice de anormalidad
+    #                            del URI.
     #
     # Variables de entrada:
-    #   * self : Corresponde a la instancia del objeto Lexer.
-    #   * data : Corresponde al input del Lexer.
+    #   * epsilon0 :.
+    #   * N : .
+    #   * sumaLogaritmos:
     #
     # Variables de salida:
-    #   * Tokens : Lista de tokens correctos
-    #   * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #   * indiceAnormalidad: Indice de anormalidad del URI.
 
     local indiceAnormalidad : double;
     indiceAnormalidad = - (N * Math::logaritmo(epsilon0)) - sumaLogaritmos;
@@ -272,15 +278,19 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
                 Bvector: table[string,string] of Probability, 
                 vectorPoov: table[string] of Valor): table[count] of double{
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Se llaman todas las funciones necesarias
+    #                            para evaluar el indice de anormalidad de un
+    #                            URI.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * uriParsed  : Estructura que almacena el URI segmentado.
+    #    * Bvector    : Vector B (vector que almacena el modelo).
+    #    * vectorPoov : Vector que almacena los diferentes Poov.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * tablaIndiceAnormalidad: Tabla que almacena los indices de anormalidad
+    #                              de cada uno de los estados del automata. 
+
 
     local tablaIndiceAnormalidad : table[count] of double;
 
@@ -381,15 +391,15 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
 
 function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of double){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que verifica si el indice de anormalidad
+    #                            de un URI es anomalo o no.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * theta : Umbral de normalidad.
+    #    * indicesAnormalidad : Tabla que contiene indices de anormalidad.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna.
 
     for (i in indicesAnormalidad){
 
@@ -398,6 +408,9 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of doub
         # se disparara una alerta.
         if (indicesAnormalidad[i] >= theta && alarmaEmitida == F){
             print "EMITIR ALARMA";
+            NOTICE([$note=Umbral_Anomalia,
+            $msg = "Se ha sobrepasado el umbral de anomalia",
+            $sub = fmt("URI = %s", "www")]);
             alarmaEmitida = T;
         }
         else {

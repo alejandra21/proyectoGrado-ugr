@@ -36,6 +36,16 @@ global Theta: string = "Theta";
 
 function evaluarUri(host: string, uri: string){
 
+    # Descripción de la función: Clase Lexer.
+    #
+    # Variables de entrada:
+    #    * self : Corresponde a la instancia del objeto Lexer.
+    #    * data : Corresponde al input del Lexer.
+    #
+    # Variables de salida:
+    #    * Tokens : Lista de tokens correctos
+    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+
     local indicesDeAnormalidad: table[count] of double;
     local probabilidad: double;
     local Ns: double;
@@ -45,10 +55,11 @@ function evaluarUri(host: string, uri: string){
     print uri;
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
-    #indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-    #                                            Btable,config);
+    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+                                                Btable,config);
 
-    #Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+    Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+    print indicesDeAnormalidad;
     print Segmentacion::parsedUri;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
     print "---------------##------------------------------------";
