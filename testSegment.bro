@@ -16,6 +16,15 @@ type Path: record {
         path: string;
 };
 
+type Clave: record {
+
+        clave : string;
+};
+
+global config : table[string] of Evaluacion::Valor;
+global modelTable: table[string] of string;
+global Btable: table[string,string] of Evaluacion::Probability = table();
+
 #------------------------------------------------------------------------------#
 
 # Create an ID for our new stream. By convention, this is
@@ -38,6 +47,16 @@ event bro_init(){
 	                   $idx=Host, $val=Path, $destination=uriTable]
 				    );
 
+    # Se leen los datos del archivo de configuracion.
+    Input::add_table([$source="config", $name="config",
+                          $idx=Clave, $val=Evaluacion::Valor, 
+                          $destination=config]);
+
+
+    # Se leen los datos del modelo
+    Input::add_table([$source="modeloBro.log", $name="modeloBro.log",
+                          $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
+                          $destination=Btable]);
 
 }
 
@@ -45,6 +64,7 @@ event bro_init(){
 
 event Input::end_of_data(name: string, source: string) {
 
+        local indicesDeAnormalidad: table[count] of double;
         # now all data is in the table
         for (i in uriTable){
 
@@ -53,6 +73,20 @@ event Input::end_of_data(name: string, source: string) {
             print uriTable[i]$path;
             Segmentacion::parseHost(i);
             Segmentacion::parseUrl(uriTable[i]$path);
+            print Segmentacion::parsedUri;
+
+            # Se almacena el uri en la estructura de datos que almacenara al uri
+            # segmentado.
+            Segmentacion::parsedUri$uri = cat(i,uriTable[i]$path);
+
+            # Se evalua el uri segmentado con el modelo cargado.
+            indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+                                                        Btable,config);
+
+            # Se veridica si existe alguna anormalidad con el uri.
+            Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+            Segmentacion::inicializarRecord(Segmentacion::parsedUri);
+
             print "-------------";
 
         }
@@ -68,7 +102,6 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     if ( c$http$method == "GET" && c$http$status_code == 200 ){
 
             print "";
-
         }
     
     }

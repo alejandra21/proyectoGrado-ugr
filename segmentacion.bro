@@ -8,6 +8,7 @@ export {
 
     type uriSegmentado: record {
 
+        uri : string &default = "";
         host: table [count] of string;
         path: table [count] of string;
         query: table[string] of string &default = table();
@@ -25,7 +26,7 @@ export {
 
 
 #------------------------------------------------------------------------------#
-#                             TABLA HTML ENCODING                                #
+#                             TABLA HTML ENCODING                              #
 #------------------------------------------------------------------------------#
 
 global encoding : table[string] of string = {    ["+"]    =    "%20" , 
@@ -325,16 +326,11 @@ function parsePath(url:string){
       local results = split(url, test_pattern);
 
       # Se elimina el primer elemento.
-      if (|results| == 3 && results[1] == "" && results[3] == ""){
+      for (i in results){
 
-        delete results[1];
-        delete results[3];
-
-      }
-      else if (results[1] == ""){
-
-            delete results[1];
-
+            if (results[i] == ""){
+                  delete results[i];
+            }
       }
 
       parsedUri$path = results;
@@ -651,12 +647,11 @@ function parseUrl(url: string) {
 
         urlResult = normalizarUri(url);
 
-        print urlResult;
-
         # Se parsea la ruta
         local test_pattern = /[^?#"'\r\n><]*\/?/;
         local results = split_all(urlResult, test_pattern);
-
+        print "Resultado del parseo";
+        print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
@@ -683,7 +678,7 @@ function parseUrl(url: string) {
         # El tercer fragmento (opcional) contendrá los datos para realizar
         # el query y el fragment.
         if (results[3] != ""){
-            parseQueryFragment(results[3]);
+            parseQueryFragment(cat("?",results[4]));
         }
         
     }

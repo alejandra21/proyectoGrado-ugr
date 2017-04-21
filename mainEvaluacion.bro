@@ -55,10 +55,18 @@ function evaluarUri(host: string, uri: string){
     print uri;
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
+
+    # Se almacena el uri en la estructura de datos que almacenara al uri
+    # segmentado.
+    Segmentacion::parsedUri$uri = cat(host,uri);
+
+    # Se evalua el uri segmentado con el modelo cargado.
     indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
                                                 Btable,config);
 
+    # Se veridica si existe alguna anormalidad con el uri.
     Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+
     print indicesDeAnormalidad;
     print Segmentacion::parsedUri;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
@@ -75,7 +83,7 @@ event bro_init(){
     print "Inicio";
 
     # Se leen los datos del archivo de configuracion.
-    Input::add_table([$source="modelo", $name="modelo",
+    Input::add_table([$source="config", $name="config",
                           $idx=Clave, $val=Evaluacion::Valor, 
                           $destination=config]);
 
@@ -92,12 +100,12 @@ event Input::end_of_data(name: string, source: string) {
 
     print "LEI LOS ARCHIVOS";
 
-    if (name == "modelo" && |config| == 0){
+    if (name == "config" && |config| == 0){
 
         print "Se deben introducir los parametros de configuracion";
         exit(0);
     }
-    else if (name == "modelo") {
+    else if (name == "config") {
 
         # Se verifica que todos los parametros de configuracion esten en el
         # archivo de configuracion.

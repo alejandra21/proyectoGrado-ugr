@@ -401,22 +401,38 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of doub
     # Variables de salida:
     #    * Ninguna.
 
-    for (i in indicesAnormalidad){
 
-        # Si el indice de anormalidad es mayor o igual que theta, y no se han
-        # emitido alarmas anteriores para el uri que se esta evaluando, entonces
-        # se disparara una alerta.
-        if (indicesAnormalidad[i] >= theta && alarmaEmitida == F){
-            print "EMITIR ALARMA";
-            NOTICE([$note=Umbral_Anomalia,
-            $msg = "Se ha sobrepasado el umbral de anomalia",
-            $sub = fmt("URI = %s", "www")]);
-            alarmaEmitida = T;
+    # Existe algun error de sintaxis en el URI.
+    if (!Segmentacion::parsedUri$uriCorrecto){
+
+        NOTICE([$note=Umbral_Anomalia,
+        $msg = "Error de sintaxis en el URI",
+        $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
+        alarmaEmitida = T;
+
+    }
+    # No existen errores de sintaxis en el URI.
+    else{
+        
+        # Se itera sobre la tabal que contiene los indices de anormalidad
+        # para comprobar si se debe emitir alguna alarma.
+        for (i in indicesAnormalidad){
+
+            # Si el indice de anormalidad es mayor o igual que theta, y no se han
+            # emitido alarmas anteriores para el uri que se esta evaluando, entonces
+            # se disparara una alerta.
+            if (indicesAnormalidad[i] >= theta && alarmaEmitida == F){
+                print "EMITIR ALARMA";
+                NOTICE([$note=Umbral_Anomalia,
+                $msg = "Se ha sobrepasado el umbral de anomalia",
+                $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
+                alarmaEmitida = T;
+            }
+            else {
+                print "NO HACER NADA";
+            }
+      
         }
-        else {
-            print "NO HACER NADA";
-        }
-  
     }
 
 }
