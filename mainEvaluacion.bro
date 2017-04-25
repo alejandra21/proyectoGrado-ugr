@@ -46,7 +46,7 @@ function evaluarUri(host: string, uri: string){
     #    * Tokens : Lista de tokens correctos
     #    * Errores : Lista de tokens con los errores lexicograficos encontrados
 
-    local indicesDeAnormalidad: table[count] of double;
+    local indiceDeAnormalidad: double;
     local probabilidad: double;
     local Ns: double;
 
@@ -61,13 +61,13 @@ function evaluarUri(host: string, uri: string){
     Segmentacion::parsedUri$uri = cat(host,uri);
 
     # Se evalua el uri segmentado con el modelo cargado.
-    indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
+    indiceDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
                                                 Btable,config);
 
     # Se veridica si existe alguna anormalidad con el uri.
-    Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+    Evaluacion::verifiarAnomalia(config["Theta"]$valor,indiceDeAnormalidad);
 
-    print indicesDeAnormalidad;
+    print indiceDeAnormalidad;
     print Segmentacion::parsedUri;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
     print "---------------##------------------------------------";
