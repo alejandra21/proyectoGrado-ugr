@@ -39,7 +39,7 @@ export {
 
     global evaluar: function(uriParsed: Segmentacion::uriSegmentado, 
                             Bvector: table[string,string] of Probability,
-                            vectorPoov: table[string] of Valor): table[count] of double;
+                            vectorPoov: table[string] of Valor): double;
 
     global calcularProbabilidad: function(vectorB: table[count] of double) : double;
 
@@ -47,13 +47,13 @@ export {
                                                 sumaLogaritmos: double) : double;
 
     global verifiarAnomalia: function(theta: double,
-                                      indicesAnormalidad: table[count] of double);
+                                      indicesAnormalidad: double);
 
 }
 
 global infinito: double = 100000000;
 redef enum Notice::Type += { Umbral_Anomalia };
-global alarmaEmitida: bool = F;
+
 
 #------------------------------------------------------------------------------#
 #                     FUNCIONES PARA EL MODULO DE EVALUACION                   #
@@ -91,7 +91,7 @@ function evaluarValores(wordList:table[string] of string,
 
     for ( i in wordList){
 
-        if ([estado,wordList[i]] in pVector){
+        if ([estado,wordList[i]] in pVector && pVector[estado,wordList[i]]$probability > epsilon){
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -101,7 +101,8 @@ function evaluarValores(wordList:table[string] of string,
         }
         else{
 
-            # Se entra en este caso si la palabra no estaba en el vocabulario.
+            # Se entra en este caso si la palabra no estaba en el vocabulario o
+            # si la probabilidad de la palabra es menor que Poov.
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
 
@@ -156,7 +157,7 @@ function evaluarAtributos(wordList:table[string] of string,
 
     for ( [word] in wordList ){
 
-        if ([estado,word] in pVector){
+        if ([estado,word] in pVector && pVector[estado,word]$probability > epsilon){
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -166,7 +167,8 @@ function evaluarAtributos(wordList:table[string] of string,
         }
         else{
 
-            # Se entra en este caso si la palabra no estaba en el vocabulario.
+            # Se entra en este caso si la palabra no estaba en el vocabulario o
+            # si la probabilidad de la palabra es menor que Poov.
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
 
@@ -206,7 +208,7 @@ function evaluarHostPath(wordList:table [count] of string,
     #
     # Variables de salida:
     #    *  tablaEvaluacion: Tabla que contiene el resultado de la suma de las 
-    #                        probabilidades de aparicion de las palabras como la 
+    #                        probabilidades de aparicion de las palabras y la 
     #                        suma del los logaritmos de la probabilidad de aparicion.
 
     local results : double;
@@ -219,7 +221,7 @@ function evaluarHostPath(wordList:table [count] of string,
 
     for ( i in wordList){
 
-        if ([estado,wordList[i]] in pVector){
+        if ([estado,wordList[i]] in pVector && pVector[estado,wordList[i]]$probability > epsilon){
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
@@ -229,7 +231,9 @@ function evaluarHostPath(wordList:table [count] of string,
         }
         else{
 
-            # Se entra en este caso si la palabra no estaba en el vocabulario.
+            # Se entra en este caso si la palabra no estaba en el vocabulario o
+            # si la probabilidad de la palabra es menor que Poov.
+            
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
             
@@ -276,7 +280,7 @@ function calcularIndiceAnormalidad(epsilon0: double, N: double,
 
 function evaluar(uriParsed: Segmentacion::uriSegmentado, 
                 Bvector: table[string,string] of Probability, 
-                vectorPoov: table[string] of Valor): table[count] of double{
+                vectorPoov: table[string] of Valor): double{
 
     # Descripción de la función: Se llaman todas las funciones necesarias
     #                            para evaluar el indice de anormalidad de un
@@ -292,7 +296,7 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     #                              de cada uno de los estados del automata. 
 
 
-    local tablaIndiceAnormalidad : table[count] of double;
+    local indiceAnormalidad : double;
 
     local host : table[count] of double;
     local path : table[count] of double;
@@ -308,10 +312,6 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     local Bsp = "Bsp";
     local Bsa = "Bsa";
     local Bsv = "Bsv";
-
-    # Como se evaluara un nuevo URI el flag de alarmas emitida se inicializara
-    # en False.
-    alarmaEmitida = F;
 
     # Si el URI posee una sintaxis correcta se procede a calcular los indices
     # de anormalidad.
@@ -339,25 +339,20 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
         }
             
-        tablaIndiceAnormalidad[1] = Nss ;
-        tablaIndiceAnormalidad[2] = Nsp ;
-        tablaIndiceAnormalidad[3] = Nsv ;
-        tablaIndiceAnormalidad[4] = Nsa ;
+        indiceAnormalidad = Nss + Nsp + Nsv + Nsa ;
 
     }
+
     # Si el URI no posee una sintaxis correcta, entonces,  
     # se asignara como indice de anormalidad un valor muy alto.
     else{
 
-        tablaIndiceAnormalidad[1] = infinito ;
-        tablaIndiceAnormalidad[2] = infinito ;
-        tablaIndiceAnormalidad[3] = infinito ;
-        tablaIndiceAnormalidad[4] = infinito ;
+        indiceAnormalidad = infinito;
 
     }
 
 
-    return tablaIndiceAnormalidad;
+    return indiceAnormalidad;
 }
 
 #------------------------------------------------------------------------------#
@@ -389,7 +384,7 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
 
 #------------------------------------------------------------------------------#
 
-function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of double){
+function verifiarAnomalia(theta: double,indicesAnormalidad: double){
 
     # Descripción de la función: Funcion que verifica si el indice de anormalidad
     #                            de un URI es anomalo o no.
@@ -408,31 +403,26 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: table[count] of doub
         NOTICE([$note=Umbral_Anomalia,
         $msg = "Error de sintaxis en el URI",
         $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
-        alarmaEmitida = T;
 
     }
+
     # No existen errores de sintaxis en el URI.
     else{
         
-        # Se itera sobre la tabal que contiene los indices de anormalidad
-        # para comprobar si se debe emitir alguna alarma.
-        for (i in indicesAnormalidad){
+        # Si el indice de anormalidad es mayor o igual que theta, y no se han
+        # emitido alarmas anteriores para el uri que se esta evaluando, entonces
+        # se disparara una alerta.
+        if (indicesAnormalidad >= theta){
+            print "EMITIR ALARMA";
+            NOTICE([$note=Umbral_Anomalia,
+            $msg = "Se ha sobrepasado el umbral de anomalia",
+            $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
 
-            # Si el indice de anormalidad es mayor o igual que theta, y no se han
-            # emitido alarmas anteriores para el uri que se esta evaluando, entonces
-            # se disparara una alerta.
-            if (indicesAnormalidad[i] >= theta && alarmaEmitida == F){
-                print "EMITIR ALARMA";
-                NOTICE([$note=Umbral_Anomalia,
-                $msg = "Se ha sobrepasado el umbral de anomalia",
-                $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
-                alarmaEmitida = T;
-            }
-            else {
-                print "NO HACER NADA";
-            }
-      
         }
+        else {
+            print "NO HACER NADA";
+        }
+      
     }
 
 }
