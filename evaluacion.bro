@@ -117,7 +117,7 @@ function evaluarValores(wordList:table[string] of string,
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[estado,wordList[i]]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,wordList[i]]$probability);
+            sumLogaritmos = sumLogaritmos + log10(pVector[estado,wordList[i]]$probability);
 
         }
         else{
@@ -125,7 +125,7 @@ function evaluarValores(wordList:table[string] of string,
             # Se entra en este caso si la palabra no estaba en el vocabulario o
             # si la probabilidad de la palabra es menor que Poov.
             results = results + epsilon;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
+            sumLogaritmos = sumLogaritmos + log10(epsilon);
 
         }
     }
@@ -183,7 +183,8 @@ function evaluarAtributos(wordList:table[string] of string,
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[estado,word]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,word]$probability);
+            sumLogaritmos = sumLogaritmos + log10(pVector[estado,word]$probability);
+
 
         }
         else{
@@ -191,7 +192,7 @@ function evaluarAtributos(wordList:table[string] of string,
             # Se entra en este caso si la palabra no estaba en el vocabulario o
             # si la probabilidad de la palabra es menor que Poov.
             results = results + epsilon;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
+            sumLogaritmos = sumLogaritmos + log10(epsilon);
 
         }
     }
@@ -247,7 +248,7 @@ function evaluarHostPath(wordList:table [count] of string,
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
             results =  results + pVector[estado,wordList[i]]$probability;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(pVector[estado,wordList[i]]$probability);
+            sumLogaritmos = sumLogaritmos + log10(pVector[estado,wordList[i]]$probability);
 
         }
         else{
@@ -256,7 +257,7 @@ function evaluarHostPath(wordList:table [count] of string,
             # si la probabilidad de la palabra es menor que Poov.
 
             results = results + epsilon;
-            sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
+            sumLogaritmos = sumLogaritmos + log10(epsilon);
             
         }
 
@@ -291,7 +292,7 @@ function calcularIndiceAnormalidad(epsilon0: double, N: double,
     #   * indiceAnormalidad: Indice de anormalidad del URI.
 
     local indiceAnormalidad : double;
-    indiceAnormalidad = - (N * Math::logaritmo(epsilon0)) - sumaLogaritmos;
+    indiceAnormalidad = - (N * log10(epsilon0)) - sumaLogaritmos;
 
     return indiceAnormalidad;
 
@@ -396,7 +397,7 @@ function calcularProbabilidad(vectorB: table[count] of double) : double {
     # Se calcula la sumatoria de las probabilidades que contiene el vectorB
     for (i in vectorB){
 
-        resultVectorB = resultVectorB + Math::logaritmo(vectorB[i]);
+        resultVectorB = resultVectorB + log10(vectorB[i]);
     }
 
     return resultVectorB;

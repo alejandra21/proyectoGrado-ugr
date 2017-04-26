@@ -259,6 +259,7 @@ function inicializarRecord(datos: uriSegmentado){
     #    * Ninguna.
 
 
+    datos$uri = "";
     datos$host = table();
     datos$path = table();
     datos$query = table();;

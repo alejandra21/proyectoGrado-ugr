@@ -35,14 +35,31 @@ redef enum Log::ID += { LOG };
 export{
 
 
+    #--------------------------------------------------------------------------#
+    #                         REGISTROS PARA LOS VECTORES B
+    #--------------------------------------------------------------------------#
+
+    type Word: record {
+            state: string;
+            word: string;
+    };
+
+    type Probability: record {
+            probability: double;
+    };
+
+    #--------------------------------------------------------------------------#
+
     global entrenar: function(uriParsed: Segmentacion::uriSegmentado);
     global escribirArchivo: function(vocabulario: table[count] of table[string] of Entrenamiento);
+    global entrenarOnline: function(uriParsed: Segmentacion::uriSegmentado);
 
     # Tablas que almacenan el vocabulario de cada uno de los estados del automata
     global entrenamientoSs: table[string] of Entrenamiento = table();
     global entrenamientoSp: table[string] of Entrenamiento = table();
     global entrenamientoSa: table[string] of Entrenamiento = table();
     global entrenamientoSv: table[string] of Entrenamiento = table();
+    global Btable: table[string,string] of Probability = table();
 
 
     global tablaEntrenamieto : table[count] of table[string] of Entrenamiento = {[1] = entrenamientoSs, 
@@ -341,7 +358,6 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
     # Variables de salida:
     #    * Ninguna.
 
-
     numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,
                                             numeroPalabraSs);
     numeroPalabraSp = entrenamientoPathHost(uriParsed$path, entrenamientoSp ,
@@ -350,6 +366,242 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
                                             numeroPalabraSa);
     numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,
                                             numeroPalabraSv);
+
+
+}
+
+#------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+
+function entrenamientoPathHostOnline(wordList: table [count] of string, 
+                                vocabulario: table[string,string] of Probability,
+                                numPalabras: double, state: string): double {
+
+    # Descripción de la función: Esta funcion itera sobre la tabla de palabras
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
+    #
+    # Variables de entrada:
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+    #
+    # Variables de salida:
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+
+    local x : double;
+    local probabilidad: double;
+
+    print wordList;
+
+    for (i in wordList){
+
+        if ([state,wordList[i]] in vocabulario){
+
+            # Se suma una unidad a la palabra que ya se encontraba en el 
+            # vocabulario.
+            x =  numPalabras*vocabulario[state,wordList[i]]$probability;
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+            vocabulario[state,wordList[i]]$probability = (x + 1)/(numPalabras);
+            print "PROBABILIDAD 1";
+            print vocabulario[state,wordList[i]]$probability;
+
+        }
+        else{
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+
+            # Se agrega la nueva palabra al vocabulario
+            probabilidad = 1 / (numPalabras);
+            vocabulario[state,wordList[i]] = Probability($probability=probabilidad);
+
+            print "PROBABILIDAD 2";
+            print vocabulario[state,wordList[i]]$probability;
+
+        }
+    
+    
+    }
+
+    return numPalabras;
+}
+
+#------------------------------------------------------------------------------#
+
+function entrenamientoAtributosOnline(wordList: table [string] of string, 
+                                vocabulario: table[string,string] of Probability, 
+                                numPalabras: double, state: string): double{
+
+    # Descripción de la función: Esta funcion itera sobre la tabla de palabras
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
+    #
+    # Variables de entrada:
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+    #
+    # Variables de salida:
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+    
+
+    local x : double;
+    local probabilidad: double;
+
+    print wordList;
+
+    for (i in wordList){
+
+        if ([state,wordList[i]] in vocabulario){
+
+            # Se suma una unidad a la palabra que ya se encontraba en el 
+            # vocabulario.
+            x =  numPalabras*vocabulario[state,wordList[i]]$probability;
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+            vocabulario[state,wordList[i]]$probability = (x + 1)/(numPalabras);
+            print "PROBABILIDAD ATRIBUTOS 1";
+            print vocabulario[state,wordList[i]]$probability;
+
+        }
+        else{
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+
+            # Se agrega la nueva palabra al vocabulario
+            probabilidad = 1 / (numPalabras);
+            vocabulario[state,wordList[i]] = Probability($probability=probabilidad);
+
+            print "PROBABILIDAD ATRIBUTOS 2";
+            print vocabulario[state,wordList[i]]$probability;
+
+        }
+    }
+
+    return numPalabras;
+    
+}
+
+#------------------------------------------------------------------------------#
+
+function entrenamientoValoresOnline(wordList: table [string] of string, 
+                              vocabulario: table[string,string] of Probability, 
+                              numPalabras: double, state: string): double {
+    
+    # Descripción de la función: Esta funcion itera sobre las claves de la tabla
+    #                            "wordList" y verifica si las palabras estan 
+    #                             dentro de la tabla "vocabulario". Si la 
+    #                             palabra esta dentro de la misma, se le sumara
+    #                             uno al numero de aparicion de dicha palabra. 
+    #                             Si por el contrario, la palabra no esta en la
+    #                             tabla de vocabulario, entonces la misma sera 
+    #                             añadida al vocabulario.
+    #
+    # Variables de entrada:
+    #
+    #    * wordList    : Lista de palabras.
+    #    * vocabulario : Tabla que contiene una lista de palabras y una lista de
+    #                    numeros que corresponde al numero de apariciones de 
+    #                    las mismas.
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+    #
+    # Variables de salida:
+    #
+    #    * numPalabras : Numero total de apariciones de todas las palabras de la
+    #                    tabla "vocabulario".
+
+
+    local x : double;
+    local probabilidad: double;
+
+    for ( [word] in wordList){
+
+        if ( [state,word] in vocabulario){
+
+            # Se suma una unidad a la palabra que ya se encontraba en el 
+            # vocabulario.
+            x =  numPalabras*vocabulario[state,word]$probability;
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+            vocabulario[state,word]$probability = (x + 1)/(numPalabras);
+            print "PROBABILIDAD VALORES 1";
+            print vocabulario[state,word]$probability;
+
+        }
+    
+        else{
+
+            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            numPalabras = numPalabras + 1;
+
+            # Se agrega la nueva palabra al vocabulario
+            probabilidad = 1 / (numPalabras);
+            vocabulario[state,word] = Probability($probability=probabilidad);
+
+            print "PROBABILIDAD VALORES 2";
+            print vocabulario[state,word]$probability;
+
+
+        }
+        
+    }
+
+    return numPalabras;
+    
+}
+
+#------------------------------------------------------------------------------#
+
+function entrenarOnline(uriParsed: Segmentacion::uriSegmentado){
+
+    # Descripción de la función: Se encarga de llamar a todas las funciones
+    #                            correspondientes para realizar el 
+    #                            entrenamiento.
+    #
+    # Variables de entrada:
+    #    * uriParsed : Estructura que contiene el URI segmentado.
+    #
+    # Variables de salida:
+    #    * Ninguna.
+
+
+    numeroPalabraSs = entrenamientoPathHostOnline(uriParsed$host,Btable,numeroPalabraSs,
+                                            "Bss");
+    numeroPalabraSp = entrenamientoPathHostOnline(uriParsed$path,Btable,numeroPalabraSp,
+                                            "Bsp");
+    numeroPalabraSa = entrenamientoAtributosOnline(uriParsed$query,Btable,numeroPalabraSa,
+                                            "Bsa");
+    numeroPalabraSv = entrenamientoValoresOnline(uriParsed$query,Btable,numeroPalabraSv,
+                                            "Bsv");
 
 }
 
