@@ -82,6 +82,9 @@ event bro_init(){
 
     print "Inicio";
 
+    local nombreArchivo = "alertas";
+    Log::create_stream(Evaluacion::LOG, [$columns=Evaluacion::InfoAtaque, $path=nombreArchivo]);
+
     # Se leen los datos del archivo de configuracion.
     Input::add_table([$source="config", $name="config",
                           $idx=Clave, $val=Evaluacion::Valor, 

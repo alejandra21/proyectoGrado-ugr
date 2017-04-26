@@ -49,7 +49,28 @@ export {
     global verifiarAnomalia: function(theta: double,
                                       indicesAnormalidad: double);
 
+    # Create an ID for our new stream
+    redef enum Log::ID += { LOG };
+
+    type InfoAtaque: record {
+
+            clasificacion: string &log &default = "";
+            uri : string &log &default = "";
+            probability: string &log &default = "";
+    };
+
 }
+
+
+#------------------------------------------------------------------------------#
+#                                  REGISTROS                                   #
+#------------------------------------------------------------------------------#
+
+
+
+#------------------------------------------------------------------------------#
+#                                  VARIABLES                                   #
+#------------------------------------------------------------------------------#
 
 global infinito: double = 100000000;
 redef enum Notice::Type += { Umbral_Anomalia };
@@ -233,7 +254,7 @@ function evaluarHostPath(wordList:table [count] of string,
 
             # Se entra en este caso si la palabra no estaba en el vocabulario o
             # si la probabilidad de la palabra es menor que Poov.
-            
+
             results = results + epsilon;
             sumLogaritmos = sumLogaritmos + Math::logaritmo(epsilon);
             
@@ -391,32 +412,45 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: double){
     #
     # Variables de entrada:
     #    * theta : Umbral de normalidad.
-    #    * indicesAnormalidad : Tabla que contiene indices de anormalidad.
+    #    * indicesAnormalidad : Indice de anormalidad.
     #
     # Variables de salida:
     #    * Ninguna.
 
 
+
+    # Se incializa el registro que se utilizara para escribir sobre el 
+    # archivo.
+    local rec: InfoAtaque;
+    rec = InfoAtaque();
+
     # Existe algun error de sintaxis en el URI.
     if (!Segmentacion::parsedUri$uriCorrecto){
 
-        NOTICE([$note=Umbral_Anomalia,
-        $msg = "Error de sintaxis en el URI",
-        $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
+            rec$clasificacion = "Error de sintaxis en el URI : ";
+            rec$uri = Segmentacion::parsedUri$uri;
+            rec$probability = "-";
+
+            # Se escribe en el archivo
+            Log::write(LOG, rec);
 
     }
 
     # No existen errores de sintaxis en el URI.
     else{
         
-        # Si el indice de anormalidad es mayor o igual que theta, y no se han
-        # emitido alarmas anteriores para el uri que se esta evaluando, entonces
+        # Si el indice de anormalidad es mayor o igual que theta, entonces
         # se disparara una alerta.
+
         if (indicesAnormalidad >= theta){
             print "EMITIR ALARMA";
-            NOTICE([$note=Umbral_Anomalia,
-            $msg = "Se ha sobrepasado el umbral de anomalia",
-            $sub = fmt("URI = %s", Segmentacion::parsedUri$uri)]);
+
+            rec$clasificacion = "Se ha sobrepasado el umbral de anomalia : ";
+            rec$uri = Segmentacion::parsedUri$uri;
+            rec$probability = cat(indicesAnormalidad,"");
+
+            # Se escribe en el archivo
+            Log::write(LOG, rec);
 
         }
         else {
