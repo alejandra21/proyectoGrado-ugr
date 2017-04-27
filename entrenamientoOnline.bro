@@ -56,6 +56,7 @@ function entrenarOnline(host: string, uri: string){
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
     Entrenamiento::entrenarOnline(Segmentacion::parsedUri);
+    print Segmentacion::parsedUri;
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
     print "---------------##------------------------------------";
 
@@ -73,6 +74,8 @@ event bro_init(){
     Input::add_table([$source="modeloBro.log", $name="modeloBro.log",
                           $idx=Entrenamiento::Word, $val=Entrenamiento::Probability, 
                           $destination=Entrenamiento::Btable]);
+
+    Input::remove("modeloBro.log");
 }
 
 #------------------------------------------------------------------------------#
@@ -80,7 +83,12 @@ event bro_init(){
 event Input::end_of_data(name: string, source: string) {
 
     print "LEI LOS ARCHIVOS";
-    print Entrenamiento::Btable;
+
+    # Se lee el numero total de palabras que existe por cada estado.
+    for (i in Entrenamiento::numPalabrasTable){
+
+        Entrenamiento::numPalabrasTable[i] = Entrenamiento::Btable[i,"numTotal"]$probability;
+    }
 
 }
 
@@ -103,7 +111,8 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 event bro_done(){
 
     print "Finalizacion del entrenamiento...";
-    #Entrenamiento::escribirArchivo(Entrenamiento::tablaEntrenamieto);
+    print Entrenamiento::Btable;
+    Entrenamiento::escribirArchivoOnline(Entrenamiento::Btable);
     #exit(0);
 
 }

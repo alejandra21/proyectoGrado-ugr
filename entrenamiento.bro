@@ -28,6 +28,13 @@ type Info: record {
 # Create an ID for our new stream
 redef enum Log::ID += { LOG };
 
+
+# Variables que almacenan el numero total de palabras en el vocabulario.
+global numeroPalabraSs : string = "numeroPalabraSs";
+global numeroPalabraSp : string = "numeroPalabraSp";
+global numeroPalabraSv : string = "numeroPalabraSv";
+global numeroPalabraSa : string = "numeroPalabraSa";
+
 #------------------------------------------------------------------------------#
 #                               EXPORTACIONES                                  #
 #------------------------------------------------------------------------------#
@@ -52,13 +59,18 @@ export{
 
     global entrenar: function(uriParsed: Segmentacion::uriSegmentado);
     global escribirArchivo: function(vocabulario: table[count] of table[string] of Entrenamiento);
+    global escribirArchivoOnline: function(vocabulario: table[string,string] of Probability);
     global entrenarOnline: function(uriParsed: Segmentacion::uriSegmentado);
+
+
 
     # Tablas que almacenan el vocabulario de cada uno de los estados del automata
     global entrenamientoSs: table[string] of Entrenamiento = table();
     global entrenamientoSp: table[string] of Entrenamiento = table();
     global entrenamientoSa: table[string] of Entrenamiento = table();
     global entrenamientoSv: table[string] of Entrenamiento = table();
+    
+
     global Btable: table[string,string] of Probability = table();
 
 
@@ -68,6 +80,12 @@ export{
                                                       [4] = entrenamientoSv };
 
 
+    global numPalabrasTable : table[string] of double = {
+                        [numeroPalabraSs] = 0.0,
+                        [numeroPalabraSp] = 0.0,
+                        [numeroPalabraSv] = 0.0,
+                        [numeroPalabraSa] = 0.0 };
+
 }
 
 
@@ -75,11 +93,6 @@ export{
 
 # Variables utilizadas en el modulo de entrenamiento.
 
-# Variables que almacenan el numero total de palabras en el vocabulario.
-global numeroPalabraSs : double = 0.0;
-global numeroPalabraSp : double = 0.0;
-global numeroPalabraSv : double = 0.0;
-global numeroPalabraSa : double = 0.0;
 
 
 #------------------------------------------------------------------------------#
@@ -314,6 +327,8 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
     local tablaEstados: table[count] of string = { [1] = "Bss", [2] = "Bsp",
                                                     [3] = "Bsa", [4] = "Bsv"};
+
+
     local nombreArchivo = "modeloBro";
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
 
@@ -342,6 +357,73 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
     }
 
+    print numPalabrasTable;
+    # Se escribe en el modelo el numero total de palabras que hay en cada estado.
+    rec$word = "numTotal";
+
+    for (word in numPalabrasTable){
+
+        rec$state = word;
+        rec$probability = numPalabrasTable[word];
+
+        # Se escribe en el archivo
+        Log::write(LOG, rec);
+
+    }
+
+
+}
+
+#------------------------------------------------------------------------------#
+
+
+function escribirArchivoOnline(vocabulario: table[string,string] of Probability) {
+
+    # Descripción de la función: Esta funcion se encarga de escribir en un log
+    #                            la informacion almacenada en la tabla
+    #                            "vocabulario".
+    #
+    # Variables de entrada:
+    #
+    #    * vocabulario : Tabla que almacena varias tablas que contienen las 
+    #                    palabras onservadas durante el entrenamiento y la 
+    #                    probabilidad de aparicion de las mismas.
+    #                       
+    #
+    # Variables de salida:
+    #    * Ninguna.
+
+    # Se crea el archivo.
+
+
+    local nombreArchivo = "modeloBro";
+    Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
+
+    # Se incializa el registro que se utilizara para escribir sobre el 
+    # archivo.
+    local rec: Info;
+    rec = Info();
+
+
+    # Se lee el numero total de palabras que existe por cada estado.
+    for (i in numPalabrasTable){
+
+        Entrenamiento::Btable[i,"numTotal"]$probability = numPalabrasTable[i];
+    }
+
+
+    # Se itera sobre las palabras del vocabulario para guardarlas en el log.
+    for ([estado,palabra] in vocabulario){
+
+        rec$word = palabra;
+        rec$probability = vocabulario[estado,palabra]$probability;
+        rec$state = estado;
+
+        # Se escribe en el archivo
+        Log::write(LOG, rec);
+        
+    }
+
 }
 
 #------------------------------------------------------------------------------#
@@ -358,15 +440,17 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
     # Variables de salida:
     #    * Ninguna.
 
-    numeroPalabraSs = entrenamientoPathHost(uriParsed$host, entrenamientoSs ,
-                                            numeroPalabraSs);
-    numeroPalabraSp = entrenamientoPathHost(uriParsed$path, entrenamientoSp ,
-                                            numeroPalabraSp);
-    numeroPalabraSa = entrenamientoAtributos(uriParsed$query, entrenamientoSa ,
-                                            numeroPalabraSa);
-    numeroPalabraSv = entrenamientoValores(uriParsed$query, entrenamientoSv ,
-                                            numeroPalabraSv);
+    numPalabrasTable[numeroPalabraSs] = entrenamientoPathHost(uriParsed$host, 
+                                        entrenamientoSs,numPalabrasTable[numeroPalabraSs]);
 
+    numPalabrasTable[numeroPalabraSp] = entrenamientoPathHost(uriParsed$path, 
+                                        entrenamientoSp,numPalabrasTable[numeroPalabraSp]);
+
+    numPalabrasTable[numeroPalabraSa] = entrenamientoAtributos(uriParsed$query, 
+                                        entrenamientoSa,numPalabrasTable[numeroPalabraSa]);
+
+    numPalabrasTable[numeroPalabraSv] = entrenamientoValores(uriParsed$query, 
+                                        entrenamientoSv,numPalabrasTable[numeroPalabraSv]);
 
 }
 
@@ -417,6 +501,7 @@ function entrenamientoPathHostOnline(wordList: table [count] of string,
             numPalabras = numPalabras + 1;
             vocabulario[state,wordList[i]]$probability = (x + 1)/(numPalabras);
             print "PROBABILIDAD 1";
+            print wordList[i];
             print vocabulario[state,wordList[i]]$probability;
 
         }
@@ -430,6 +515,7 @@ function entrenamientoPathHostOnline(wordList: table [count] of string,
             vocabulario[state,wordList[i]] = Probability($probability=probabilidad);
 
             print "PROBABILIDAD 2";
+            print wordList[i];
             print vocabulario[state,wordList[i]]$probability;
 
         }
@@ -594,14 +680,21 @@ function entrenarOnline(uriParsed: Segmentacion::uriSegmentado){
     #    * Ninguna.
 
 
-    numeroPalabraSs = entrenamientoPathHostOnline(uriParsed$host,Btable,numeroPalabraSs,
-                                            "Bss");
-    numeroPalabraSp = entrenamientoPathHostOnline(uriParsed$path,Btable,numeroPalabraSp,
-                                            "Bsp");
-    numeroPalabraSa = entrenamientoAtributosOnline(uriParsed$query,Btable,numeroPalabraSa,
-                                            "Bsa");
-    numeroPalabraSv = entrenamientoValoresOnline(uriParsed$query,Btable,numeroPalabraSv,
-                                            "Bsv");
+    numPalabrasTable[numeroPalabraSs] = entrenamientoPathHostOnline(uriParsed$host,
+                                        Btable,numPalabrasTable[numeroPalabraSs],
+                                        "Bss");
+
+    numPalabrasTable[numeroPalabraSp] = entrenamientoPathHostOnline(uriParsed$path,
+                                        Btable,numPalabrasTable[numeroPalabraSp],
+                                        "Bsp");
+
+    numPalabrasTable[numeroPalabraSa] = entrenamientoAtributosOnline(uriParsed$query,
+                                        Btable,numPalabrasTable[numeroPalabraSa],
+                                        "Bsa");
+
+    numPalabrasTable[numeroPalabraSv] = entrenamientoValoresOnline(uriParsed$query,
+                                        Btable,numPalabrasTable[numeroPalabraSv],
+                                        "Bsv");
 
 }
 

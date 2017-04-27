@@ -651,8 +651,7 @@ function parseUrl(url: string) {
         # Se parsea la ruta
         local test_pattern = /[^?#"'\r\n><]*\/?/;
         local results = split_all(urlResult, test_pattern);
-        print "Resultado del parseo";
-        print results;
+
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
