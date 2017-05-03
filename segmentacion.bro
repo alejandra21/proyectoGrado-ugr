@@ -31,6 +31,8 @@ export {
 
 global encoding : table[string] of string = {    ["+"]    =    "%20" , 
                                                 [" "]    =    "%20" ,
+                                                ["\x0"]  = "%00",
+                                                ["\x00"] = "%00",
                                                 ["%21"] =    "!"     ,
                                                 ["%22"] =    "”"    ,                                        
                                                 ["%23"] =    "#"    ,
@@ -409,9 +411,13 @@ function parseQueryFragment(url:string){
     }
     else {
 
-        local test_pattern = /\/?\?([^"'\r\n><]+(=[^"'\r\n><]*)?(&[^"'\r\n><]+(=[^"'\r\n><]*)?)*)?/;
+        print "URL";
+        print url;
+        local test_pattern = /\/?\?([^"'><]+(=[^"'><]*)?(&[^"'><]+(=[^"'><]*)?)*)?/;
         local results = split_all(url, test_pattern);
         local queryUri : URI;
+
+        print results;
 
         if (|results|==3){
 
@@ -647,11 +653,14 @@ function parseUrl(url: string) {
         local urlResult: string;
 
         urlResult = normalizarUri(url);
+        print "Despues de normalizar";
+        print urlResult;
 
         # Se parsea la ruta
         local test_pattern = /[^?#"'\r\n><]*\/?/;
         local results = split_all(urlResult, test_pattern);
 
+        print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
@@ -678,7 +687,10 @@ function parseUrl(url: string) {
         # El tercer fragmento (opcional) contendrá los datos para realizar
         # el query y el fragment.
         if (results[3] != ""){
-            parseQueryFragment(cat("?",results[4]));
+            local query: string;
+            print "ESTE ES EL QUERY";
+            query = cat_string_array_n(results,3,|results|);
+            parseQueryFragment(query);
         }
         
     }

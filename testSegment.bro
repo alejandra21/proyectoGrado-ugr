@@ -65,12 +65,11 @@ event bro_init(){
 event Input::end_of_data(name: string, source: string) {
 
         local indicesDeAnormalidad: table[count] of double;
+        local queryUri : URI;
         # now all data is in the table
         for (i in uriTable){
 
             print "-------------";
-            print i;
-            print uriTable[i]$path;
             Segmentacion::parseHost(i);
             Segmentacion::parseUrl(uriTable[i]$path);
             print Segmentacion::parsedUri;
@@ -78,13 +77,7 @@ event Input::end_of_data(name: string, source: string) {
             # Se almacena el uri en la estructura de datos que almacenara al uri
             # segmentado.
             Segmentacion::parsedUri$uri = cat(i,uriTable[i]$path);
-
-            # Se evalua el uri segmentado con el modelo cargado.
-            indicesDeAnormalidad = Evaluacion::evaluar(Segmentacion::parsedUri,
-                                                        Btable,config);
-
-            # Se veridica si existe alguna anormalidad con el uri.
-            Evaluacion::verifiarAnomalia(config["Theta"]$valor,indicesDeAnormalidad);
+            
             Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 
             print "-------------";
