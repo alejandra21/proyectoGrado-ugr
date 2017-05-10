@@ -264,7 +264,7 @@ function inicializarRecord(datos: uriSegmentado){
     datos$uri = "";
     datos$host = table();
     datos$path = table();
-    datos$query = table();;
+    datos$query = table();
     datos$fragment = "";
     datos$uriCorrecto = T;
 
@@ -391,6 +391,26 @@ function parseFragment(url:string){
 }
 
 #------------------------------------------------------------------------------#
+function setQuery(url: string){
+
+      local queryUri : URI;
+      local emptyTable: table[string] of string;
+
+      emptyTable = table();
+      queryUri = decompose_uri(url);
+
+      if (|queryUri$params| > 0 ){
+
+           parsedUri$query = queryUri$params;
+
+      }
+      else{
+            parsedUri$uriCorrecto = F; 
+      }
+
+}
+
+#------------------------------------------------------------------------------#
 
 function parseQueryFragment(url:string){
 
@@ -411,18 +431,12 @@ function parseQueryFragment(url:string){
     }
     else {
 
-        print "URL";
-        print url;
-        local test_pattern = /\/?\?([^"'><]+(=[^"'><]*)?(&[^"'><]+(=[^"'><]*)?)*)?/;
+        local test_pattern = /\?[^"'><]+((=[^"'><]*)?(&[^"'><]+(=[^"'><]*)?)*)?/;
         local results = split_all(url, test_pattern);
-        local queryUri : URI;
-
-        print results;
-
+        
         if (|results|==3){
 
-            queryUri = decompose_uri(results[2]);
-            parsedUri$query = queryUri$params;
+            setQuery(results[2]);
 
             # Se verifica si el "fragment" hace match con la expresion regular
             # correspondiente.
@@ -432,15 +446,13 @@ function parseQueryFragment(url:string){
 
         else if (|results|==2){
 
-            queryUri = decompose_uri(results[2]);
-            parsedUri$query = queryUri$params;
+            setQuery(results[2]);
 
         }
         else{
 
             print "ERROR QUERY FRAGMENT";
             parsedUri$uriCorrecto = F;
-            return;
         }
 
     }
@@ -653,14 +665,14 @@ function parseUrl(url: string) {
         local urlResult: string;
 
         urlResult = normalizarUri(url);
-        print "Despues de normalizar";
-        print urlResult;
 
         # Se parsea la ruta
         local test_pattern = /[^?#"'\r\n><]*\/?/;
         local results = split_all(urlResult, test_pattern);
 
+        print "#-----#";
         print results;
+        print "#-----#";
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
@@ -692,6 +704,7 @@ function parseUrl(url: string) {
             query = cat_string_array_n(results,3,|results|);
             parseQueryFragment(query);
         }
+
         
     }
 

@@ -77,9 +77,7 @@ event Input::end_of_data(name: string, source: string) {
             # Se almacena el uri en la estructura de datos que almacenara al uri
             # segmentado.
             Segmentacion::parsedUri$uri = cat(i,uriTable[i]$path);
-            
             Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-
             print "-------------";
 
         }
