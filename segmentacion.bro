@@ -431,7 +431,7 @@ function parseQueryFragment(url:string){
     }
     else {
 
-        local test_pattern = /\?[^"'><]+((=[^"'><]*)?(&[^"'><]+(=[^"'><]*)?)*)?/;
+        local test_pattern = /\?[^"']+((=[^"']*)?(&[^"']+(=[^"']*)?)*)?/;
         local results = split_all(url, test_pattern);
         
         if (|results|==3){
@@ -654,6 +654,8 @@ function parseUrl(url: string) {
     # Variables de salida:
     #    * Ninguna.
 
+    print "url";
+    print url;
     if (url == "" || parsedUri$uriCorrecto == F){
 
         return;
@@ -663,16 +665,15 @@ function parseUrl(url: string) {
 
         # Se normaliza el formato del URI.
         local urlResult: string;
-
         urlResult = normalizarUri(url);
 
         # Se parsea la ruta
-        local test_pattern = /[^?#"'\r\n><]*\/?/;
+        local test_pattern = /[^?#"']*\/?/;
         local results = split_all(urlResult, test_pattern);
 
-        print "#-----#";
+
+        print "results";
         print results;
-        print "#-----#";
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
@@ -699,10 +700,11 @@ function parseUrl(url: string) {
         # El tercer fragmento (opcional) contendrá los datos para realizar
         # el query y el fragment.
         if (results[3] != ""){
+
             local query: string;
-            print "ESTE ES EL QUERY";
             query = cat_string_array_n(results,3,|results|);
             parseQueryFragment(query);
+
         }
 
         
