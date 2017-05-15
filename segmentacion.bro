@@ -431,7 +431,7 @@ function parseQueryFragment(url:string){
     }
     else {
 
-        local test_pattern = /\?[^"']+((=[^"']*)?(&[^"']+(=[^"']*)?)*)?/;
+        local test_pattern = /\?[^#]+((=[^#]*)?(&[^#]+(=[^#]*)?)*)?/;
         local results = split_all(url, test_pattern);
         
         if (|results|==3){
@@ -668,7 +668,7 @@ function parseUrl(url: string) {
         urlResult = normalizarUri(url);
 
         # Se parsea la ruta
-        local test_pattern = /[^?#"']*\/?/;
+        local test_pattern = /[^?#]*\/?/;
         local results = split_all(urlResult, test_pattern);
 
 

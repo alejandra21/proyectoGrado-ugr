@@ -70,8 +70,6 @@ function entrenamiento(host: string, uri: string){
     Entrenamiento::entrenar(Segmentacion::parsedUri);
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
     print "---------------##------";
-    
-    
 
 }
 
@@ -90,7 +88,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
 
-    if ( c$http$method == "GET" && c$http$status_code == 200 ){
+    if ( c$http$method == "HEAD" ){
 
             entrenamiento(c$http$host,c$http$uri);
 
