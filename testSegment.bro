@@ -72,14 +72,17 @@ event Input::end_of_data(name: string, source: string) {
             print "-------------";
             Segmentacion::parseHost(i);
             Segmentacion::parseUrl(uriTable[i]$path);
-            print Segmentacion::parsedUri;
+            print "uri sin segmentar";
+            print uriTable[i]$path;
 
+            print Segmentacion::parsedUri;
             # Se almacena el uri en la estructura de datos que almacenara al uri
             # segmentado.
             Segmentacion::parsedUri$uri = cat(i,uriTable[i]$path);
 
             queryUri = decompose_uri(Segmentacion::parsedUri$uri);
             print queryUri;
+
             Segmentacion::inicializarRecord(Segmentacion::parsedUri);
 
             print "-------------";

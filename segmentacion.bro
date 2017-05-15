@@ -362,11 +362,12 @@ function parseFragment(url:string){
     }
     else{
         
-        local test_pattern = /\/#.*/;
-        local results = split(url, test_pattern);
-        if (|results| == 2){
+        local test_pattern = /#.*/;
+        local results = split_all(url, test_pattern);
 
-            if (results[1] == ""){
+        if (|results| == 3){
+
+            if (results[1] == "" && results[3] == ""){
 
                 parsedUri$fragment = results[2];
 
