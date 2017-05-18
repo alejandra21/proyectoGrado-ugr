@@ -13,6 +13,7 @@ export {
         path: table [count] of string;
         query: table[string] of string &default = table();
         fragment: string &default = "";
+        numEstados: int &default = 0;
         uriCorrecto: bool &default = T;
 
     };
@@ -266,6 +267,7 @@ function inicializarRecord(datos: uriSegmentado){
     datos$path = table();
     datos$query = table();
     datos$fragment = "";
+    datos$numEstados = 0;
     datos$uriCorrecto = T;
 
 }
@@ -305,7 +307,7 @@ function normalizarUri(url: string): string {
 function parsePath(url:string){
 
     # Descripción de la función: Esta funcion, dada la ruta correspondiente a
-    #                            un URI, segmenta y almacena en una tabla cada 
+    #                            un URI, segmenta, almacena en una tabla cada 
     #                            una de las palabras separadas por el 
     #                            separador: "/".
     #
@@ -321,6 +323,7 @@ function parsePath(url:string){
 
       local path: table [count] of string = {[1] = "/"};
       parsedUri$path = path;
+      parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
     else{
@@ -339,6 +342,9 @@ function parsePath(url:string){
       parsedUri$path = results;
 
     }
+
+    parsedUri$numEstados = parsedUri$numEstados + 1;
+
 
 }
 
@@ -403,6 +409,7 @@ function setQuery(url: string){
       if (|queryUri$params| > 0 ){
 
            parsedUri$query = queryUri$params;
+           parsedUri$numEstados = parsedUri$numEstados + 2;
 
       }
       else{
@@ -432,9 +439,9 @@ function parseQueryFragment(url:string){
     }
     else {
 
-        local test_pattern = /\?[^#]+((=[^#]*)?(&[^#]+(=[^#]*)?)*)?/;
+        local test_pattern = /\?[^#&]+((=[^#&]*)?(&[^#&]+(=[^#&]*)?)*)?/;
         local results = split_all(url, test_pattern);
-        
+
         if (|results|==3){
 
             setQuery(results[2]);
@@ -486,6 +493,7 @@ function fragmentHost(url: string){
         local test_pattern = /\.|:/;
         local results = split(url, test_pattern);
         parsedUri$host = results;
+        parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
 
@@ -517,6 +525,7 @@ function fragmentIp(ip: string){
         local test_pattern = /:/;
         local results = split(ip, test_pattern);
         parsedUri$host = results;
+        parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
 
@@ -655,8 +664,6 @@ function parseUrl(url: string) {
     # Variables de salida:
     #    * Ninguna.
 
-    print "url";
-    print url;
     if (url == "" || parsedUri$uriCorrecto == F){
 
         return;
@@ -672,9 +679,6 @@ function parseUrl(url: string) {
         local test_pattern = /[^?#]*\/?/;
         local results = split_all(urlResult, test_pattern);
 
-
-        print "results";
-        print results;
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 

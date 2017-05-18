@@ -14,9 +14,9 @@ eval set -- "$TEMP"
 # extract options and their arguments into variables.
 while true ; do
     case "$1" in
-        -e|--evl)  bro -r $2 mainEvaluacion.bro; exit 1 ;;
-        -t|--trainingOffline) bro -r $2 mainEntrenamiento.bro; exit 1 ;;
-        -i|--trainingInline) bro -r $2 entrenamientoInline.bro; exit 1;;
+        -e|--evl)  bro -C -r $2 mainEvaluacion.bro; exit 1 ;;
+        -t|--trainingOffline) bro -C -r $2 mainEntrenamiento.bro; exit 1 ;;
+        -i|--trainingInline) bro -C -r $2 entrenamientoInline.bro; exit 1;;
         --) shift ; break ;;
         *) echo "Internal error!" ; exit 1 ;;
     esac

@@ -133,6 +133,7 @@ function evaluarValores(wordList:table[string] of string,
 
     if (|wordList|!= 0){
 
+        # Se calcula el valor de epsilon sub cero.
         results = results /|wordList|;
     }
 
@@ -199,6 +200,7 @@ function evaluarAtributos(wordList:table[string] of string,
 
     if (|wordList|!= 0){
 
+        # Se calcula el valor de epsilon sub cero.
         results = results /|wordList|;
     }
 
@@ -265,6 +267,7 @@ function evaluarHostPath(wordList:table [count] of string,
     
     if (|wordList|!= 0){
 
+        # Se calcula el valor de epsilon sub cero.
         results = results /|wordList|;
     }
 
@@ -339,12 +342,15 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     # de anormalidad.
     if (uriParsed$uriCorrecto){
 
+        # Se calcula el numero de estados que posee el URI.
+        print "EL NUMERO DE ESTADOS ES: ";
+        print uriParsed$numEstados;
         host = evaluarHostPath(uriParsed$host,Bvector,vectorPoov["Poov1"]$valor,Bss);
         path = evaluarHostPath(uriParsed$path,Bvector,vectorPoov["Poov2"]$valor,Bsp);
 
         # Se calculan los indices de anormalidad del host y del path
-        Nss = calcularIndiceAnormalidad(host[1],|uriParsed$host|,host[2]);
-        Nsp = calcularIndiceAnormalidad(path[1],|uriParsed$path|,path[2]);
+        Nss = calcularIndiceAnormalidad(host[1],uriParsed$numEstados,host[2]);
+        Nsp = calcularIndiceAnormalidad(path[1],uriParsed$numEstados,path[2]);
 
 
         # Si el URI posee query se calcula el indice de anormalidad tanto de
@@ -356,8 +362,8 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
             # Se calculan los indices de anormalidad del los valores y atributos
             # del query.
-            Nsv = calcularIndiceAnormalidad(valores[1],|uriParsed$query|,valores[2]);
-            Nsa = calcularIndiceAnormalidad(atributos[1],|uriParsed$query|,atributos[2]);
+            Nsv = calcularIndiceAnormalidad(valores[1],uriParsed$numEstados,valores[2]);
+            Nsa = calcularIndiceAnormalidad(atributos[1],uriParsed$numEstados,atributos[2]);
 
         }
             
@@ -448,7 +454,7 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: double){
 
             rec$clasificacion = "Se ha sobrepasado el umbral de anomalia : ";
             rec$uri = Segmentacion::parsedUri$uri;
-            rec$probability = cat(indicesAnormalidad,"");
+            rec$probability = cat(" ",indicesAnormalidad);
 
             # Se escribe en el archivo
             Log::write(LOG, rec);
