@@ -112,12 +112,13 @@ function evaluarValores(wordList:table[string] of string,
 
     for ( i in wordList){
 
-        if ([estado,wordList[i]] in pVector && pVector[estado,wordList[i]]$probability > epsilon){
+        if ([estado,i] in pVector && pVector[estado,i]$probability > epsilon){
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
-            results =  results + pVector[estado,wordList[i]]$probability;
-            sumLogaritmos = sumLogaritmos + log10(pVector[estado,wordList[i]]$probability);
+
+            results =  results + pVector[estado,i]$probability;
+            sumLogaritmos = sumLogaritmos + log10(pVector[estado,i]$probability);
 
         }
         else{
@@ -177,14 +178,15 @@ function evaluarAtributos(wordList:table[string] of string,
     local tablaEvaluacion: table[count] of double = table();
 
 
-    for ( [word] in wordList ){
+    for ( word in wordList ){
 
-        if ([estado,word] in pVector && pVector[estado,word]$probability > epsilon){
+        if ([estado,wordList[word]] in pVector && pVector[estado,wordList[word]]$probability > epsilon){
 
             # Se suma la probabilidad de la palabra que se encuentra en el
             # diccionario.
-            results =  results + pVector[estado,word]$probability;
-            sumLogaritmos = sumLogaritmos + log10(pVector[estado,word]$probability);
+
+            results =  results + pVector[estado,wordList[word]]$probability;
+            sumLogaritmos = sumLogaritmos + log10(pVector[estado,wordList[word]]$probability);
 
 
         }
@@ -343,10 +345,10 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     if (uriParsed$uriCorrecto){
 
         # Se calcula el numero de estados que posee el URI.
-        print "EL NUMERO DE ESTADOS ES: ";
-        print uriParsed$numEstados;
         host = evaluarHostPath(uriParsed$host,Bvector,vectorPoov["Poov1"]$valor,Bss);
+
         path = evaluarHostPath(uriParsed$path,Bvector,vectorPoov["Poov2"]$valor,Bsp);
+
 
         # Se calculan los indices de anormalidad del host y del path
         Nss = calcularIndiceAnormalidad(host[1],uriParsed$numEstados,host[2]);
@@ -357,8 +359,11 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
         # los valores como los atributos de los mismos.
         if (|uriParsed$query| != 0){
 
+
             valores = evaluarValores(uriParsed$query,Bvector,vectorPoov["Poov3"]$valor,Bsv);
+
             atributos = evaluarAtributos(uriParsed$query,Bvector,vectorPoov["Poov4"]$valor,Bsa);
+
 
             # Se calculan los indices de anormalidad del los valores y atributos
             # del query.
