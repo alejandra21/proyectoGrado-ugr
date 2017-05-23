@@ -15,6 +15,8 @@
 module HTTP;
 @load segmentacion
 @load entrenamiento
+@load evaluacion
+
 
 #------------------------------------------------------------------------------#
 #                             VARIABLES GLOBALES                               #
