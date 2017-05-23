@@ -1,3 +1,14 @@
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : mainEntrenamiento.bro
+#
+# Autor :
+#       Alejandra Cordero 
+#   
+
+   
 #------------------------------------------------------------------------------#
 #                                  IMPORTES                                    #
 #------------------------------------------------------------------------------#
@@ -8,68 +19,36 @@ module HTTP;
 @load entrenamiento
 
 #------------------------------------------------------------------------------#
-#                                 REGISTROS                                    #
-#------------------------------------------------------------------------------#
-
-type Model: record {
-
-        clave : string;
-};
-
-
-type Valor: record {
-
-        valor : string;
-};
-
-#------------------------------------------------------------------------------#
-#                             VARIABLES GLOBALES                               #
-#------------------------------------------------------------------------------#
-
-global stringModelo: URI;
-global modelo : table[string] of string;
-global modelTable: table[string] of string;
-global BSsTable: table[string] of Evaluacion::Probability = table();
-global BSpTable: table[string] of Evaluacion::Probability = table();
-global BSaTable: table[string] of Evaluacion::Probability = table();
-global BSvTable: table[string] of Evaluacion::Probability = table();
-global vectorProbabilidad: vector of table[string] of Evaluacion::Probability = { BSsTable , BSpTable, BSvTable , BSaTable };
-
-# Claves del modelo.
-global Bss: string   = "Bss";
-global Bsp: string   = "Bsp";
-global Bsv: string   = "Bsv";
-global Bsa: string   = "Bsa";
-global Poov: string  = "Poov";
-global Theta: string = "Theta";
-
-#------------------------------------------------------------------------------#
 #                                FUNCIONES                                     #
 #------------------------------------------------------------------------------#
 
 function entrenamiento(host: string, uri: string){
 
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Funcion que se encarga de llamar a las 
+    #                            funciones de segmentacion y entrenamiento.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * host : Parte correspondiente al host del URI.
+    #    * uri : Parte correspondiente al path, el query y el fragment del URI.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna
+    #    
 
-    print "---------------##------";
-    print "Estoy en GET";
-    print host;
-    print uri;
+
+    # Se segmenta tanto el "host" como el "uri" y el resultado de dicha 
+    # operacion se alacena en el registro "Segmentacion::parsedUri" 
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
-    print Segmentacion::parsedUri;
+ 
+    # Una vez segmentado el uri, se procede a evaluar la expresion del
+    # entrenamiento.
     Entrenamiento::entrenar(Segmentacion::parsedUri);
+
+    # Se inicializa el registro que almacena el uri segmentado
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-    print "---------------##------";
+
 
 }
 
@@ -87,12 +66,12 @@ event bro_init(){
 event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
+        # Si el method es HEAD se hace la llamada a la funcion "entrenamiento"
+        if ( c$http$method == "GET" ){
 
-    if ( c$http$method == "HEAD" ){
+                entrenamiento(c$http$host,c$http$uri);
 
-            entrenamiento(c$http$host,c$http$uri);
-
-    }
+        }
     
     }
 
@@ -101,8 +80,10 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 event bro_done(){
 
     print "Finalizacion del entrenamiento...";
+
+    # Se escribe en el archivo modelBro.log los resultados obtenidos en el 
+    # entrenamiento.
     Entrenamiento::escribirArchivo(Entrenamiento::tablaEntrenamieto);
-    #exit(0);
 
 }
 

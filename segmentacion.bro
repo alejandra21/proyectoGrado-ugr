@@ -409,7 +409,13 @@ function setQuery(url: string){
       if (|queryUri$params| > 0 ){
 
            parsedUri$query = queryUri$params;
-           parsedUri$numEstados = parsedUri$numEstados + 2;
+
+           if (|parsedUri$query|!=0){
+
+            parsedUri$numEstados = parsedUri$numEstados + 2;
+            
+           }
+      
 
       }
       else{

@@ -466,7 +466,14 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: double){
 
         }
         else {
-            print "NO HACER NADA";
+
+            rec$clasificacion = "### Es un URI normal : ";
+            rec$uri = Segmentacion::parsedUri$uri;
+            rec$probability = cat(" ",indicesAnormalidad);
+
+            # Se escribe en el archivo
+            Log::write(LOG, rec);
+
         }
       
     }

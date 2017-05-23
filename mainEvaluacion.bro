@@ -21,6 +21,10 @@ type Clave: record {
 #                             VARIABLES GLOBALES                               #
 #------------------------------------------------------------------------------#
 
+global max: double = 0.0;
+global uriMax : string;
+global min: double = 1000000.0;
+global uriMin: string;
 global stringModelo: URI;
 global config : table[string] of Evaluacion::Valor;
 global modelTable: table[string] of string;
@@ -68,7 +72,20 @@ function evaluarUri(host: string, uri: string){
     Evaluacion::verifiarAnomalia(config["Theta"]$valor,indiceDeAnormalidad);
 
     print indiceDeAnormalidad;
-    print Segmentacion::parsedUri;
+
+    if (indiceDeAnormalidad < min && Segmentacion::parsedUri$uriCorrecto){
+
+        min = indiceDeAnormalidad;
+        uriMin = Segmentacion::parsedUri$uri;
+
+    }
+
+    if (indiceDeAnormalidad > max && Segmentacion::parsedUri$uriCorrecto ){
+
+        max = indiceDeAnormalidad;
+        uriMax = Segmentacion::parsedUri$uri;
+    }
+
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
     print "---------------##------------------------------------";
 
@@ -83,6 +100,7 @@ event bro_init(){
     print "Inicio";
 
     local nombreArchivo = "alertas";
+
     Log::create_stream(Evaluacion::LOG, [$columns=Evaluacion::InfoAtaque, $path=nombreArchivo]);
 
     # Se leen los datos del archivo de configuracion.
@@ -148,3 +166,20 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     }
 
 #------------------------------------------------------------------------------#
+
+event bro_done(){
+
+    print "---------------------";
+    print "Maximo";
+    print max;
+    print uriMax;
+    print "Minimo";
+    print min;
+    print uriMin;
+    print "---------------------";
+    #exit(0);
+
+}
+
+#------------------------------------------------------------------------------#
+
