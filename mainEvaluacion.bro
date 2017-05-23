@@ -1,3 +1,14 @@
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : mainEvaluacion.bro
+#
+# Autor :
+#       Alejandra Cordero 
+#   
+
+
 #------------------------------------------------------------------------------#
 #                                  IMPORTES                                    #
 #------------------------------------------------------------------------------#
@@ -5,12 +16,12 @@
 module HTTP;
 @load segmentacion
 @load evaluacion
-@load entrenamiento
 
 #------------------------------------------------------------------------------#
 #                                 REGISTROS                                    #
 #------------------------------------------------------------------------------#
 
+# Registro que almacenara las claves de la tabla "config".
 type Clave: record {
 
         clave : string;
@@ -21,17 +32,17 @@ type Clave: record {
 #                             VARIABLES GLOBALES                               #
 #------------------------------------------------------------------------------#
 
-global max: double = 0.0;
-global uriMax : string;
-global min: double = 1000000.0;
-global uriMin: string;
-global stringModelo: URI;
-global config : table[string] of Evaluacion::Valor;
-global modelTable: table[string] of string;
+global config : table[string] of Evaluacion::Valor; # Tabla que almacena los 
+                                                    # parametros de configuracion.
+
+# Tabla que almacena los datos provenientes del modelo del sistema.                                                  
 global Btable: table[string,string] of Evaluacion::Probability = table();
 
-# Claves del modelo.
-global Poov: string  = "Poov";
+global nombreArchivoConfig = "config";  # Nombre del archivo que contiene los
+                                        # parametros de configuracion.
+
+# Claves para acceder a la entrada de la tabla "config" que alamcena el valor 
+# del valor Thetha.
 global Theta: string = "Theta";
 
 #------------------------------------------------------------------------------#
@@ -40,27 +51,27 @@ global Theta: string = "Theta";
 
 function evaluarUri(host: string, uri: string){
 
-    # Descripción de la función: Clase Lexer.
+    # Descripción de la función: Esta funcion dado un URI, lo segmenta y luego
+    #                            evalua si este es anomalo o no.
     #
     # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
+    #    * host : Parte correspondiente al host del URI.
+    #    * uri : Parte correspondiente al path, el query y el fragment del URI.
     #
     # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
+    #    * Ninguna
+    #  
 
-    local indiceDeAnormalidad: double;
-    local probabilidad: double;
-    local Ns: double;
 
-    print "---------------##------------------------------------";
-    print host;
-    print uri;
+    local indiceDeAnormalidad: double; # Variable que almacenara el indice de
+                                       # anormalidad del URI segmentado.
+
+    # Se segmenta tanto el "host" como el "uri" y el resultado de dicha 
+    # operacion se alacena en el registro "Segmentacion::parsedUri" 
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
 
-    # Se almacena el uri en la estructura de datos que almacenara al uri
+    # Se almacena el uri completo en la estructura de datos que almacenara al uri
     # segmentado.
     Segmentacion::parsedUri$uri = cat(host,uri);
 
@@ -69,25 +80,10 @@ function evaluarUri(host: string, uri: string){
                                                 Btable,config);
 
     # Se veridica si existe alguna anormalidad con el uri.
-    Evaluacion::verifiarAnomalia(config["Theta"]$valor,indiceDeAnormalidad);
+    Evaluacion::verifiarAnomalia(config[Theta]$valor,indiceDeAnormalidad);
 
-    print indiceDeAnormalidad;
-
-    if (indiceDeAnormalidad < min && Segmentacion::parsedUri$uriCorrecto){
-
-        min = indiceDeAnormalidad;
-        uriMin = Segmentacion::parsedUri$uri;
-
-    }
-
-    if (indiceDeAnormalidad > max && Segmentacion::parsedUri$uriCorrecto ){
-
-        max = indiceDeAnormalidad;
-        uriMax = Segmentacion::parsedUri$uri;
-    }
-
+    # Se inicializa el registro que almacena el uri segmentado
     Segmentacion::inicializarRecord(Segmentacion::parsedUri);
-    print "---------------##------------------------------------";
 
 }
 
@@ -97,20 +93,29 @@ function evaluarUri(host: string, uri: string){
 
 event bro_init(){
 
-    print "Inicio";
 
-    local nombreArchivo = "alertas";
+    local nombreArchivo       = "alertas";      # Nombre del LOG de los URIs 
+                                                # anomalos.
 
-    Log::create_stream(Evaluacion::LOG, [$columns=Evaluacion::InfoAtaque, $path=nombreArchivo]);
+    local nombreArchivoModel  = "modeloBro.log";# Nombre del archivo que contiene
+                                                # el modelo.
 
-    # Se leen los datos del archivo de configuracion.
-    Input::add_table([$source="config", $name="config",
+    print "Inicio de la evaluacion...";
+
+    # Se crea el LOG que contendra los URIs anomalos en caso de que
+    # existir.
+    Log::create_stream(Evaluacion::LOG, [$columns=Evaluacion::InfoAtaque,
+                                        $path=nombreArchivo]);
+
+    # Se leen los datos del archivo de configuracion y se almacenan en la tabla
+    # llamada "config".
+    Input::add_table([$source=nombreArchivoConfig, $name=nombreArchivoConfig,
                           $idx=Clave, $val=Evaluacion::Valor, 
                           $destination=config]);
 
 
-    # Se leen los datos del modelo
-    Input::add_table([$source="modeloBro.log", $name="modeloBro.log",
+    # Se leen los datos del modelo y se almacenan en la tabla llamada "Btable".
+    Input::add_table([$source=nombreArchivoModel, $name=nombreArchivoModel,
                           $idx=Evaluacion::Word, $val=Evaluacion::Probability, 
                           $destination=Btable]);
 }
@@ -119,20 +124,24 @@ event bro_init(){
 
 event Input::end_of_data(name: string, source: string) {
 
-    print "LEI LOS ARCHIVOS";
-
+    # Si existe el archivo "config" sin nada escrito en su interior,
+    # el sistema lanzara un error anunciando que se deben introducir
+    # los parametros de configuracion.
     if (name == "config" && |config| == 0){
 
-        print "Se deben introducir los parametros de configuracion";
+        print "Se deben introducir los parametros de configuracion en el archivo";
+        print "\"config\".";
         exit(0);
     }
+    # Caso en el que el archivo "config" tenga informacion en su interior.
     else if (name == "config") {
 
         # Se verifica que todos los parametros de configuracion esten en el
         # archivo de configuracion.
         
         # Si falta algun parametro de configuracion se emitira un error.
-        if (Theta !in config || "Poov1" !in config || "Poov2" !in config || "Poov3" !in config || "Poov4" !in config){
+        if (Theta !in config || "Poov1" !in config || "Poov2" !in config ||
+            "Poov3" !in config || "Poov4" !in config){
 
             print "Se deben introducir los parametros de configuracion de forma correcta.";
             exit(0);
@@ -141,7 +150,9 @@ event Input::end_of_data(name: string, source: string) {
 
         # Si alguno de los parametros de configuracion es negativo, entonces, se
         # emitira un error.
-        if (config[Theta]$valor < 0.0 || config["Poov1"]$valor < 0.0 || config["Poov2"]$valor < 0.0 || config["Poov3"]$valor < 0.0 || config["Poov4"]$valor < 0.0){
+        if (config[Theta]$valor < 0.0 || config["Poov1"]$valor < 0.0 ||
+            config["Poov2"]$valor < 0.0 || config["Poov3"]$valor < 0.0 ||
+            config["Poov4"]$valor < 0.0){
 
             print "Se deben introducir los parametros de configuracion positivos.";
             exit(0);
@@ -157,7 +168,9 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
 
-    if ( c$http$method == "HEAD" ){
+    # Si el method es de tipo "HEAD" se procedera a evaluar si el URI
+    # es anomalo o no.
+    if ( c$http$method == "GET" ){
 
             evaluarUri(c$http$host,c$http$uri);
 
@@ -169,17 +182,11 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
 event bro_done(){
 
-    print "---------------------";
-    print "Maximo";
-    print max;
-    print uriMax;
-    print "Minimo";
-    print min;
-    print uriMin;
-    print "---------------------";
-    #exit(0);
+    print "Finalizacion de la evaluacion...";
+    print "-------------------------------------------------";
+    print "Las alertas se han escrito en el LOG: alertas.log";
+    print "-------------------------------------------------";
 
 }
 
 #------------------------------------------------------------------------------#
-
