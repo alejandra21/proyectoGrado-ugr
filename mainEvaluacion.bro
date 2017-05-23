@@ -67,7 +67,7 @@ function evaluarUri(host: string, uri: string){
                                        # anormalidad del URI segmentado.
 
     # Se segmenta tanto el "host" como el "uri" y el resultado de dicha 
-    # operacion se alacena en el registro "Segmentacion::parsedUri" 
+    # operacion se alacena en el registro "Segmentacion::parsedUri".
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
 
@@ -122,6 +122,8 @@ event bro_init(){
 
 #------------------------------------------------------------------------------#
 
+# Este evento es llamado una vez se hayan leido todos los datos del archivo
+# "modeloBro.log" o del archivo "config".
 event Input::end_of_data(name: string, source: string) {
 
     # Si existe el archivo "config" sin nada escrito en su interior,
