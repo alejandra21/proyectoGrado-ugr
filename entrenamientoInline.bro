@@ -28,6 +28,29 @@ global Btable: table[string,string] of Evaluacion::Probability = table();
 #                                FUNCIONES                                     #
 #------------------------------------------------------------------------------#
 
+function verificarModelo(Btable: table[string,string] of Evaluacion::Probability){
+
+    # Descripción de la función: Funcion que se encarga de verificar si la tabla
+    #                            "Btable" esta vacia o no. 
+    #                           
+    #
+    # Variables de entrada:
+    #    * Btable : Parte correspondiente al host del URI.
+    #
+    # Variables de salida:
+    #    * Ninguna
+    #  
+
+    if (|Btable| == 0){
+
+        print "Error: Debe existir un archivo llamado \"modeloBro.log\" que ";
+        print "contenga los datos correspondientes a un modelo.";
+        print exit(0);
+    }
+
+}
+
+#------------------------------------------------------------------------------#
 function entrenarOnline(host: string, uri: string){
 
     # Descripción de la función: Funcion que se encarga de llamar a las 
@@ -46,6 +69,10 @@ function entrenarOnline(host: string, uri: string){
     # operacion se alacena en el registro "Segmentacion::parsedUri".
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
+
+    # Se verifica si el archivo que contiene los datos del modelo se encuentra
+    # vacio o no.
+    verificarModelo(Entrenamiento::Btable);
 
     # Una vez segmentado el uri, se procede a evaluar la expresion del
     # entrenamiento.
@@ -81,6 +108,10 @@ event bro_init(){
 # "modeloBro.log".
 
 event Input::end_of_data(name: string, source: string) {
+
+    # Se verifica si el archivo que contiene los datos del modelo se encuentra
+    # vacio o no.
+    verificarModelo(Entrenamiento::Btable);
 
     # Se lee el numero de palabras que existe en cada estado.
     for (i in Entrenamiento::numPalabrasTable){
