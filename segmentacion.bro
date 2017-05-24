@@ -1,3 +1,13 @@
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : mainEntrenamientoOnline.bro
+#
+# Autor :
+#       Alejandra Cordero 
+#  
+
 module Segmentacion;
 
 #------------------------------------------------------------------------------#
@@ -6,20 +16,29 @@ module Segmentacion;
 
 export {
 
+    # Registro que almacenara el URI segmentado
     type uriSegmentado: record {
 
-        uri : string &default = "";
-        host: table [count] of string;
-        path: table [count] of string;
-        query: table[string] of string &default = table();
-        fragment: string &default = "";
-        numEstados: int &default = 0;
-        uriCorrecto: bool &default = T;
+        uri : string &default = "";    # Almacena el URI completo.
+        host: table [count] of string; # Almacena el host segmentado
+        path: table [count] of string; # Almacena el path segmentado
+        query: table[string] of string &default = table(); # Almacena el query
+                                                           # segmentado.
+        fragment: string &default = "";# Almacena el fragment segmentado.
+        numEstados: int &default = 0;  # Indica el numero de estado del automata
+                                       # fueron visitados para reconocer el URI
+        uriCorrecto: bool &default = T;# Booleano que indica si el URI esta 
+                                       # sintacticamente bien construido o no.
 
     };
 
+    # Funcion para inicializar el record que almacena el URI segmentado.
     global inicializarRecord: function(datos: uriSegmentado);
+
+    # Funcion para parsear y segmentar el host.
     global parseHost: function(url: string);
+
+    # Funcion para parsear y segmentar el path, el query y el fragment del URI.
     global parseUrl: function(url: string);
     global parsedUri: uriSegmentado;
 
@@ -307,7 +326,7 @@ function normalizarUri(url: string): string {
 function parsePath(url:string){
 
     # Descripción de la función: Esta funcion, dada la ruta correspondiente a
-    #                            un URI, segmenta, almacena en una tabla cada 
+    #                            un URI, segmenta y almacena en una tabla cada 
     #                            una de las palabras separadas por el 
     #                            separador: "/".
     #
@@ -317,21 +336,27 @@ function parsePath(url:string){
     # Variables de salida:
     #    * Ninguna.
 
-    # Se comprueba que exista un host con su ruta.
 
+    # Se comprueba que exista una ruta.
     if (url == "/" || url == ""){
 
+      # Si la ruta es igual a "" o "/" no se segmenta el contenido de la variable
+      # "url".
       local path: table [count] of string = {[1] = "/"};
+
+      # Se almacena el resultado en el registro que guardara todo el URI 
+      #segmentado.
       parsedUri$path = path;
-      parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
     else{
 
+      # Se segmenta el contenido de la variable URL haciendo uso del separador
+      # "/".
       local test_pattern = /\//;
       local results = split(url, test_pattern);
 
-      # Se elimina el primer elemento.
+      # Se eliminan los elementos vacios que resultan en la tabla resultante.
       for (i in results){
 
             if (results[i] == ""){
@@ -339,10 +364,14 @@ function parsePath(url:string){
             }
       }
 
+      # Se almacena el resultado en el registro que guardara todo el URI 
+      # segmentado.
       parsedUri$path = results;
 
     }
 
+    # Se aumenta una unidad en el numero de estados ya que simbolicamente 
+    # se ha llegado al estado Sp.
     parsedUri$numEstados = parsedUri$numEstados + 1;
 
 
@@ -368,16 +397,29 @@ function parseFragment(url:string){
     }
     else{
         
+        # Se segmenta el contenido de la variable URL haciendo uso del separador
+        # "/".
         local test_pattern = /#.*/;
+        local patternHashtag = /#/;
         local results = split_all(url, test_pattern);
 
+        # Si el contenido de "url" corresponde al framgent de un URI, entonces
+        # el resultado de la funcion "split_all" deberia dar como resultado una
+        # tabla de longitud igual a 3, donde el fragment este almacenado en 
+        # la segunda entrada de la misma.
         if (|results| == 3){
 
             if (results[1] == "" && results[3] == ""){
 
-                parsedUri$fragment = results[2];
+                # Se almacena el fragment en el registro que almacena todo
+                # el URI segmentado.
+                parsedUri$fragment = sub(results[2],patternHashtag,"");;
 
             }
+
+            # Si existen elementos en la primera o tercera entrada de la tabla 
+            # resultante, entonces se puede decir que el URI esta 
+            # sintacticamente mal construido.
             else{
 
                 print "ERROR fragment 1!";
@@ -387,6 +429,9 @@ function parseFragment(url:string){
             }
 
         }
+
+        # Si la longitud de la tabla resultante no es igual a 3, entonces
+        # se puede decir que el URI esta sintacticamente mal construido.
         else{
 
             print "ERROR fragment 2!";
@@ -400,24 +445,39 @@ function parseFragment(url:string){
 #------------------------------------------------------------------------------#
 function setQuery(url: string){
 
+      # Descripción de la función: Esta funcion, descompone el string 
+      #                            correspondiente al query string de un URI.
+      #
+      # Variables de entrada:
+      #    * url :  Query string.
+      #
+      # Variables de salida:
+      #    * Ninguna.
+
+
       local queryUri : URI;
       local emptyTable: table[string] of string;
 
       emptyTable = table();
+
+      # Se segmenta el query string.
       queryUri = decompose_uri(url);
 
       if (|queryUri$params| > 0 ){
 
+           # query$params almacena una tabla cuyas claves son los valores
+           # del query string y el contenido asociado a esas claves son los
+           # astributos.
            parsedUri$query = queryUri$params;
 
-           if (|parsedUri$query|!=0){
-
-            parsedUri$numEstados = parsedUri$numEstados + 2;
-            
-           }
-      
+           # Se aumenta una unidad en el numero de estados ya que simbolicamente 
+           # se ha llegado al estado Sv y Sa.
+           parsedUri$numEstados = parsedUri$numEstados + 2;
 
       }
+
+      # Si la longitud de la tabla que almacena el query string segmentado
+      # es igual a 0, entonces se dira que el URI esta incorrecto sintacticamente.
       else{
             parsedUri$uriCorrecto = F; 
       }
@@ -437,19 +497,20 @@ function parseQueryFragment(url:string){
     # Variables de salida:
     #    * Ninguna.
 
-    if (url == ""){
+    if (url == "" || !parsedUri$uriCorrecto){
 
-        local pathTable : table[count] of string = { [1] = "/" };            
-        parsedUri$path = pathTable;
+      return;
 
     }
     else {
 
+        # Expresion regular para parsear el query string.
         local test_pattern = /\?[^#&]+((=[^#&]*)?(&[^#&]+(=[^#&]*)?)*)?/;
         local results = split_all(url, test_pattern);
 
         if (|results|==3){
 
+            # Se verifica la correctitud del query string.
             setQuery(results[2]);
 
             # Se verifica si el "fragment" hace match con la expresion regular
@@ -460,11 +521,14 @@ function parseQueryFragment(url:string){
 
         else if (|results|==2){
 
+            # Se verifica la correctitud del query string.
             setQuery(results[2]);
 
         }
         else{
 
+            # Caso en el que el URI no hace match con la expresion regular 
+            # expuesta con anterioridad.
             print "ERROR QUERY FRAGMENT";
             parsedUri$uriCorrecto = F;
         }
@@ -487,6 +551,8 @@ function fragmentHost(url: string){
     # Variables de salida:
     #    * Ninguna.
 
+    # Si no existe un host, entonces se dira que el URI esta sintacticamente mal
+    # formado.
     if (url == ""){
 
         print "ERROR";
@@ -496,9 +562,14 @@ function fragmentHost(url: string){
     }
     else{
 
+        # Se segmenta el contenido de la variable URL haciendo uso del separador
+        # "." y ":".
         local test_pattern = /\.|:/;
         local results = split(url, test_pattern);
         parsedUri$host = results;
+
+        # Se aumenta una unidad en el numero de estados ya que simbolicamente 
+        # se ha llegado al estado Ss.
         parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
@@ -528,9 +599,14 @@ function fragmentIp(ip: string){
     }
     else{
 
+        # Se segmenta el contenido de la variable URL haciendo uso del separador
+        # ":".
         local test_pattern = /:/;
         local results = split(ip, test_pattern);
         parsedUri$host = results;
+
+        # Se aumenta una unidad en el numero de estados ya que simbolicamente 
+        # se ha llegado al estado Ss.
         parsedUri$numEstados = parsedUri$numEstados + 1;
 
     }
@@ -550,19 +626,25 @@ function returnUri(uri:string):string{
     # Variables de salida:
     #    * results[2]/results[1] : URI sin el squeme.
 
+
+    # Se segmenta el contenido de la variable URL haciendo uso del separador
+    # /(http(s)?:\/\/)?/.
     local test_pattern = /(http(s)?:\/\/)?/;
     local results = split(uri,test_pattern);
 
+    # Caso en el que el URI posee scheme.
     if (|results| == 2){
 
         return results[2];
 
     }
+    # Caso en el que el URI no posee scheme.
     else if (|results| == 1){
 
         return results[1];
 
     }
+    # Caso en el que el URI esta mal formado sintacticamente.
     else{
 
       print "ERROR RETURN URI!";
@@ -584,11 +666,13 @@ function verificarCorrectitudIp(ip: table[count] of string){
     # Variables de salida:
     #    * Ninguna.
 
+    # Se segmenta la dereccion IP.
     if (|ip| == 3 && ip[1] == "" && ip[3] == ""){
 
         fragmentIp(ip[2]);
 
     }
+    # Caso en el que existe un error sintactico.
     else {
         print "ERROR EN HOST";
         parsedUri$uriCorrecto = F;
@@ -610,10 +694,11 @@ function parseHost(url: string){
     # Variables de salida:
     #    * Ninguna.
 
-    # Se extrae el squematic.
-    local urlResult = returnUri(url);
 
-    if (urlResult!= ""){
+    if (url!= ""){
+
+          # Se extrae el scheme.
+          local urlResult = returnUri(url);
 
           # Se normaliza el formato del host.
           urlResult = normalizarUri(urlResult);
@@ -626,6 +711,7 @@ function parseHost(url: string){
           # Se verifica si el host esta bien construido
           if (results[1]=="" && ((|results| == 2)||(|results|==3 && results[3]=="") ) ){
 
+              # Se procede a segmentar el host.
               fragmentHost(results[2]);
 
           }
@@ -649,10 +735,10 @@ function parseHost(url: string){
     }
     else{
 
-      # Hubo un error con el squematic que ya fue detectado en la funcion
-      # returnUri.
+      # Si no existe un host, entonces se dira que el URI esta mal construido
+      # sintacticamente.
+      parsedUri$uriCorrecto = F;
       return;
-
     }
 
 }
@@ -670,7 +756,7 @@ function parseUrl(url: string) {
     # Variables de salida:
     #    * Ninguna.
 
-    if (url == "" || parsedUri$uriCorrecto == F){
+    if (url == "" || !parsedUri$uriCorrecto){
 
         return;
 
@@ -700,7 +786,7 @@ function parseUrl(url: string) {
 
             parsePath(results[2]);        
         }
-
+       # De no ser asi el URI sera considerara que el URI esta mal construido. 
         else {
 
             print "ERROR PARSE URI 2";
