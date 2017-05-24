@@ -40,7 +40,6 @@ function entrenamiento(host: string, uri: string){
     # operacion se alacena en el registro "Segmentacion::parsedUri".
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
- 
     # Una vez segmentado el uri, se procede a evaluar la expresion del
     # entrenamiento.
     Entrenamiento::entrenar(Segmentacion::parsedUri);

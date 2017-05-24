@@ -120,3 +120,34 @@ CIERTAS CONDICIONES:
 	  "192.168.137.211/cgi-bin/windmail.exe? -n desired.file attacker_email_address"
 	  es considerado un URI incorrecto sintácticamente ya que no existe una 
 	  tupla valor=atributo. 
+
+	- En los archivos adjuntos hay un modelo ya construido. 
+	  La forma en la que el sistema guarda el modelo es el siguiente:
+
+	  #fields	state	word	probability
+	  #types	string	string	double
+	  Bss	192.168.1.13	1.0
+	  Bsp	idr	0.16759
+	  Bsa	idpd	0.000006
+	  Bsv	nombre	0.000175
+	  numeroPalabraSs	numTotal	205069.0
+	  numeroPalabraSp	numTotal	423870.0
+	  numeroPalabraSa	numTotal	319727.0
+	  numeroPalabraSv	numTotal	319727.0
+
+	  La primera columna corresponde al estado al que corresponde la palabra
+	  (Bss, Bsp, Bsv o Bsa), la segunda columna es la palabra y la tercera
+	  columna es la probilidad de aparición de la misma.
+
+	  En el modelo se almacena el número total de palabras observadas en cada
+	  estado. 
+	  
+	  La forma de guardar dichas cantidades es la siguiente:
+
+	  	* En la primera columna se almacena las palabras claves numeroPalabraSs,
+	  	  numeroPalabraSp, numeroPalabraSa o numeroPalabraSv para identificar
+	  	  a que estado corresponde el numero de palabras totales.
+
+	  	* En la segunda columna se almacena la palabra clave "numTotal".
+
+	  	* En la tercera columna se almacena el número total de palabras vista.

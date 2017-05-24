@@ -49,6 +49,8 @@ function entrenarOnline(host: string, uri: string){
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
 
+    print Segmentacion::parsedUri;
+
     # Una vez segmentado el uri, se procede a evaluar la expresion del
     # entrenamiento.
     Entrenamiento::entrenarOnline(Segmentacion::parsedUri);
@@ -101,7 +103,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
 
-    # Si el method es GET se hace la llamada a la funcion "entrenarOnline"
+    # Si el method es HEAD se hace la llamada a la funcion "entrenarOnline"
     if ( c$http$method == "HEAD" ){
 
             entrenarOnline(c$http$host,c$http$uri);
