@@ -49,8 +49,6 @@ function entrenarOnline(host: string, uri: string){
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
 
-    print Segmentacion::parsedUri;
-
     # Una vez segmentado el uri, se procede a evaluar la expresion del
     # entrenamiento.
     Entrenamiento::entrenarOnline(Segmentacion::parsedUri);
