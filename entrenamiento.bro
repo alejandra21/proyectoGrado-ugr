@@ -10,6 +10,7 @@ module Entrenamiento;
 #                                 REGISTROS                                    #
 #------------------------------------------------------------------------------#
 
+# Registro que almacenara las palabras durante el entrenamiento.
 type Entrenamiento: record {
 
         numPalabras : double &default = 1.0;
@@ -17,7 +18,7 @@ type Entrenamiento: record {
 };
 
 
-# Define the record type that will contain the data to log.
+# Registro que contendra los datos del LOG de alarmas.
 type Info: record {
 
         state: string &log &default = "";
@@ -25,11 +26,12 @@ type Info: record {
         probability: double &log &default = 0.0;
 };
 
-# Create an ID for our new stream
+# Se crea el ID del Log.
 redef enum Log::ID += { LOG };
 
 
-# Variables que almacenan el numero total de palabras en el vocabulario.
+# Nombre de las variables que almacenan el numero total de palabras en el 
+# vocabulario.
 global numeroPalabraSs : string = "numeroPalabraSs";
 global numeroPalabraSp : string = "numeroPalabraSp";
 global numeroPalabraSv : string = "numeroPalabraSv";
@@ -56,7 +58,8 @@ export{
     };
 
     #--------------------------------------------------------------------------#
-
+    #                      VARIABLES Y FUNCIONES GLOBALES
+    #--------------------------------------------------------------------------#
     global entrenar: function(uriParsed: Segmentacion::uriSegmentado);
     global escribirArchivo: function(vocabulario: table[count] of table[string] of Entrenamiento);
     global escribirArchivoOnline: function(vocabulario: table[string,string] of Probability);
@@ -70,16 +73,20 @@ export{
     global entrenamientoSa: table[string] of Entrenamiento = table();
     global entrenamientoSv: table[string] of Entrenamiento = table();
     
-
-    global Btable: table[string,string] of Probability = table();
-
-
+    # Tabla que contiene las tablas de entrenamiento de cada uno de los 
+    # estados del automata.
     global tablaEntrenamieto : table[count] of table[string] of Entrenamiento = {[1] = entrenamientoSs, 
                                                       [2] = entrenamientoSp,
                                                       [3] = entrenamientoSa,
                                                       [4] = entrenamientoSv };
 
+    # Tabla que contiene los datos de un modelo (esta variable sera utilizada
+    # solo en el entrenamiento Online)
+    global Btable: table[string,string] of Probability = table();
 
+
+    # Tabla que contiene el numero total de palabras que contiene cada uno 
+    # de los estados del automata.
     global numPalabrasTable : table[string] of double = {
                         [numeroPalabraSs] = 0.0,
                         [numeroPalabraSp] = 0.0,
@@ -88,23 +95,8 @@ export{
 
 }
 
-
 #------------------------------------------------------------------------------#
-
-# Variables utilizadas en el modulo de entrenamiento.
-
-
-
-#------------------------------------------------------------------------------#
-
-# Variables para experimentar
-global epsilon : double = 0.0001;
-global probA : int = 0;
-global theta: double = 5;
-
-
-#------------------------------------------------------------------------------#
-#                        FUNCIONES PARA EL ENTRENAMIENTO                       #
+#                   FUNCIONES PARA EL ENTRENAMIENTO OFFLINE                    #
 #------------------------------------------------------------------------------#
 
 function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento, 
@@ -113,7 +105,7 @@ function evaluarProbabilidad(vocabulario: table[string] of Entrenamiento,
     # Descripción de la función: Esta funcion, dada una tabla  que contiene una 
     #                            lista de palabras y el numero de apariciones que 
     #                            han tenido las mismas, calcula la probabilidad
-    #                            de aparicion del cada una de las palabras.
+    #                            de aparicion de cada una de las palabras.
     #
     # Variables de entrada:
     #    * vocabulario : Tabla que contiene un listado de palabras y el numero
@@ -240,6 +232,9 @@ function entrenamientoAtributos(wordList: table [string] of string,
     
     }
 
+
+    # Se calcula la probabilidad de aparicion de cada una de las palabras de la
+    # tabla "vocabulario".
     evaluarProbabilidad(vocabulario, numPalabras);
 
     return numPalabras;
@@ -298,6 +293,9 @@ function entrenamientoValores(wordList: table [string] of string,
     
     }
 
+
+    # Se calcula la probabilidad de aparicion de cada una de las palabras de la
+    # tabla "vocabulario".
     evaluarProbabilidad(vocabulario, numPalabras);
 
     return numPalabras;
@@ -323,12 +321,12 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
     # Variables de salida:
     #    * Ninguna.
 
-    # Se crea el archivo.
 
     local tablaEstados: table[count] of string = { [1] = "Bss", [2] = "Bsp",
                                                     [3] = "Bsa", [4] = "Bsv"};
 
 
+    # Se crea el archivo.
     local nombreArchivo = "modeloBro";
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
 
@@ -357,7 +355,6 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
     }
 
-    print numPalabrasTable;
     # Se escribe en el modelo el numero total de palabras que hay en cada estado.
     rec$word = "numTotal";
 
@@ -371,58 +368,6 @@ function escribirArchivo(vocabulario: table[count] of table[string] of Entrenami
 
     }
 
-
-}
-
-#------------------------------------------------------------------------------#
-
-
-function escribirArchivoOnline(vocabulario: table[string,string] of Probability) {
-
-    # Descripción de la función: Esta funcion se encarga de escribir en un log
-    #                            la informacion almacenada en la tabla
-    #                            "vocabulario".
-    #
-    # Variables de entrada:
-    #
-    #    * vocabulario : Tabla que almacena varias tablas que contienen las 
-    #                    palabras onservadas durante el entrenamiento y la 
-    #                    probabilidad de aparicion de las mismas.
-    #                       
-    #
-    # Variables de salida:
-    #    * Ninguna.
-
-    # Se crea el archivo.
-
-
-    local nombreArchivo = "modeloBro";
-    Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
-
-    # Se incializa el registro que se utilizara para escribir sobre el 
-    # archivo.
-    local rec: Info;
-    rec = Info();
-
-
-    # Se lee el numero total de palabras que existe por cada estado.
-    for (i in numPalabrasTable){
-
-        Entrenamiento::Btable[i,"numTotal"]$probability = numPalabrasTable[i];
-    }
-
-
-    # Se itera sobre las palabras del vocabulario para guardarlas en el log.
-    for ([estado,palabra] in vocabulario){
-
-        rec$word = palabra;
-        rec$probability = vocabulario[estado,palabra]$probability;
-        rec$state = estado;
-
-        # Se escribe en el archivo
-        Log::write(LOG, rec);
-        
-    }
 
 }
 
@@ -455,6 +400,57 @@ function entrenar(uriParsed: Segmentacion::uriSegmentado){
 }
 
 #------------------------------------------------------------------------------#
+#                   FUNCIONES PARA EL ENTRENAMIENTO ONLINE                     #
+#------------------------------------------------------------------------------#
+
+function escribirArchivoOnline(vocabulario: table[string,string] of Probability) {
+
+    # Descripción de la función: Esta funcion se encarga de escribir en un log
+    #                            la informacion almacenada en la tabla
+    #                            "vocabulario".
+    #
+    # Variables de entrada:
+    #
+    #    * vocabulario : Tabla que almacena varias tablas que contienen las 
+    #                    palabras onservadas durante el entrenamiento y la 
+    #                    probabilidad de aparicion de las mismas.
+    #                       
+    #
+    # Variables de salida:
+    #    * Ninguna.
+
+    # Se crea el archivo.
+    local nombreArchivo = "modeloBro";
+    Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
+
+
+    # Se incializa el registro que se utilizara para escribir sobre el 
+    # archivo.
+    local rec: Info;
+    rec = Info();
+
+
+    # Se lee el numero total de palabras que existe por cada estado.
+    for (i in numPalabrasTable){
+
+        Btable[i,"numTotal"]$probability = numPalabrasTable[i];
+    }
+
+
+    # Se itera sobre las palabras del vocabulario para guardarlas en el log.
+    for ([estado,palabra] in vocabulario){
+
+        rec$word = palabra;
+        rec$probability = vocabulario[estado,palabra]$probability;
+        rec$state = estado;
+
+        # Se escribe en el archivo
+        Log::write(LOG, rec);
+        
+    }
+
+}
+
 #------------------------------------------------------------------------------#
 
 function entrenamientoPathHostOnline(wordList: table [count] of string, 
@@ -479,6 +475,8 @@ function entrenamientoPathHostOnline(wordList: table [count] of string,
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
     #                    tabla "vocabulario".
     #
+    #    * state       : Estado del automata.
+    #
     # Variables de salida:
     #
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
@@ -487,22 +485,19 @@ function entrenamientoPathHostOnline(wordList: table [count] of string,
     local x : double;
     local probabilidad: double;
 
-    print wordList;
-
     for (i in wordList){
 
         if ([state,wordList[i]] in vocabulario){
 
-            # Se suma una unidad a la palabra que ya se encontraba en el 
-            # vocabulario.
+            # Se calcula el numero de palabras que existe en el vocabulario.
             x =  numPalabras*vocabulario[state,wordList[i]]$probability;
 
-            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            # Se suma una unidad al numero de palabras total.
             numPalabras = numPalabras + 1;
+
+            # Se calcula y se almacena la probabilidad de la palabra.
             vocabulario[state,wordList[i]]$probability = (x + 1)/(numPalabras);
-            print "PROBABILIDAD 1";
-            print wordList[i];
-            print vocabulario[state,wordList[i]]$probability;
+
 
         }
         else{
@@ -510,13 +505,9 @@ function entrenamientoPathHostOnline(wordList: table [count] of string,
             # Se cuenta el numero de palabras que hay en el arreglo wordList
             numPalabras = numPalabras + 1;
 
-            # Se agrega la nueva palabra al vocabulario
+            # Se suma una unidad al numero de palabras total.
             probabilidad = 1 / (numPalabras);
             vocabulario[state,wordList[i]] = Probability($probability=probabilidad);
-
-            print "PROBABILIDAD 2";
-            print wordList[i];
-            print vocabulario[state,wordList[i]]$probability;
 
         }
     
@@ -550,6 +541,8 @@ function entrenamientoAtributosOnline(wordList: table [string] of string,
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
     #                    tabla "vocabulario".
     #
+    #    * state       : Estado del automata.
+    #
     # Variables de salida:
     #
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
@@ -559,34 +552,28 @@ function entrenamientoAtributosOnline(wordList: table [string] of string,
     local x : double;
     local probabilidad: double;
 
-    print wordList;
-
     for (i in wordList){
 
         if ([state,wordList[i]] in vocabulario){
 
-            # Se suma una unidad a la palabra que ya se encontraba en el 
-            # vocabulario.
+            # Se calcula el numero de palabras que existe en el vocabulario.
             x =  numPalabras*vocabulario[state,wordList[i]]$probability;
 
-            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            # Se suma una unidad al numero de palabras total.
             numPalabras = numPalabras + 1;
+
+            # Se calcula y se almacena la probabilidad de la palabra.
             vocabulario[state,wordList[i]]$probability = (x + 1)/(numPalabras);
-            print "PROBABILIDAD ATRIBUTOS 1";
-            print vocabulario[state,wordList[i]]$probability;
 
         }
         else{
 
-            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            # Se suma una unidad al numero de palabras total.
             numPalabras = numPalabras + 1;
 
-            # Se agrega la nueva palabra al vocabulario
+            # Se calcula y se almacena la probabilidad de la palabra.
             probabilidad = 1 / (numPalabras);
             vocabulario[state,wordList[i]] = Probability($probability=probabilidad);
-
-            print "PROBABILIDAD ATRIBUTOS 2";
-            print vocabulario[state,wordList[i]]$probability;
 
         }
     }
@@ -619,6 +606,8 @@ function entrenamientoValoresOnline(wordList: table [string] of string,
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
     #                    tabla "vocabulario".
     #
+    #    * state       : Estado del automata.
+    #
     # Variables de salida:
     #
     #    * numPalabras : Numero total de apariciones de todas las palabras de la
@@ -632,30 +621,23 @@ function entrenamientoValoresOnline(wordList: table [string] of string,
 
         if ( [state,word] in vocabulario){
 
-            # Se suma una unidad a la palabra que ya se encontraba en el 
-            # vocabulario.
+            # Se calcula el numero de palabras que existe en el vocabulario.
             x =  numPalabras*vocabulario[state,word]$probability;
 
-            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            # Se suma una unidad al numero de palabras total.
             numPalabras = numPalabras + 1;
             vocabulario[state,word]$probability = (x + 1)/(numPalabras);
-            print "PROBABILIDAD VALORES 1";
-            print vocabulario[state,word]$probability;
 
         }
     
         else{
 
-            # Se cuenta el numero de palabras que hay en el arreglo wordList
+            # Se calcula el numero de palabras que existe en el vocabulario.
             numPalabras = numPalabras + 1;
 
-            # Se agrega la nueva palabra al vocabulario
+            # Se suma una unidad al numero de palabras total.
             probabilidad = 1 / (numPalabras);
             vocabulario[state,word] = Probability($probability=probabilidad);
-
-            print "PROBABILIDAD VALORES 2";
-            print vocabulario[state,word]$probability;
-
 
         }
         
