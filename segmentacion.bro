@@ -422,7 +422,6 @@ function parseFragment(url:string){
             # sintacticamente mal construido.
             else{
 
-                print "ERROR fragment 1!";
                 parsedUri$uriCorrecto = F;
                 return;    
 
@@ -434,7 +433,6 @@ function parseFragment(url:string){
         # se puede decir que el URI esta sintacticamente mal construido.
         else{
 
-            print "ERROR fragment 2!";
             parsedUri$uriCorrecto = F;
             return;       
         }
@@ -529,7 +527,6 @@ function parseQueryFragment(url:string){
 
             # Caso en el que el URI no hace match con la expresion regular 
             # expuesta con anterioridad.
-            print "ERROR QUERY FRAGMENT";
             parsedUri$uriCorrecto = F;
         }
 
@@ -555,7 +552,6 @@ function fragmentHost(url: string){
     # formado.
     if (url == ""){
 
-        print "ERROR";
         parsedUri$uriCorrecto = F;
         return;
 
@@ -592,7 +588,6 @@ function fragmentIp(ip: string){
 
     if (ip == ""){
 
-        print "ERROR";
         parsedUri$uriCorrecto = F;
         return;
 
@@ -647,7 +642,6 @@ function returnUri(uri:string):string{
     # Caso en el que el URI esta mal formado sintacticamente.
     else{
 
-      print "ERROR RETURN URI!";
       parsedUri$uriCorrecto = F;
       return "";
 
@@ -674,7 +668,7 @@ function verificarCorrectitudIp(ip: table[count] of string){
     }
     # Caso en el que existe un error sintactico.
     else {
-        print "ERROR EN HOST";
+
         parsedUri$uriCorrecto = F;
         return;
     }
@@ -726,7 +720,6 @@ function parseHost(url: string){
           else {
 
             # Existe algun error de sintaxis en el URI.
-            print "ERROR EN HOST";
             parsedUri$uriCorrecto = F;
             return;
 
@@ -774,7 +767,6 @@ function parseUrl(url: string) {
         # El primer fragmento debe estar vacio
         if ( results[1] != "" ){
 
-            print "ERROR PARSE URI 1";
             parsedUri$uriCorrecto = F;
             return;
 
@@ -789,7 +781,6 @@ function parseUrl(url: string) {
        # De no ser asi el URI sera considerara que el URI esta mal construido. 
         else {
 
-            print "ERROR PARSE URI 2";
             parsedUri$uriCorrecto = F;
             return;
         }

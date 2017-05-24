@@ -1,3 +1,13 @@
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : entrenamiento.bro
+#
+# Autor :
+#       Alejandra Cordero 
+#  
+
 module Entrenamiento;
 
 #------------------------------------------------------------------------------#
@@ -18,7 +28,7 @@ type Entrenamiento: record {
 };
 
 
-# Registro que contendra los datos del LOG de alarmas.
+# Registro que contendra los datos del LOG del modelo.
 type Info: record {
 
         state: string &log &default = "";

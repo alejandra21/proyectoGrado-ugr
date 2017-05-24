@@ -1,3 +1,13 @@
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : evaluacion.bro
+#
+# Autor :
+#       Alejandra Cordero 
+#  
+
 module Evaluacion;
 
 #------------------------------------------------------------------------------#
@@ -27,7 +37,7 @@ export {
     };
 
     #--------------------------------------------------------------------------#
-    #                         REGISTRO PARA LA MATRIZ A
+    #                      REGISTRO PARA EL VECTOR DE POOV
     #--------------------------------------------------------------------------#
 
     type Valor: record {
@@ -41,17 +51,16 @@ export {
                             Bvector: table[string,string] of Probability,
                             vectorPoov: table[string] of Valor): double;
 
-    global calcularProbabilidad: function(vectorB: table[count] of double) : double;
-
     global calcularIndiceAnormalidad: function(epsilon0: double, N: double, 
                                                 sumaLogaritmos: double) : double;
 
     global verifiarAnomalia: function(theta: double,
                                       indicesAnormalidad: double);
 
-    # Create an ID for our new stream
+    # Se crea el ID del Log.
     redef enum Log::ID += { LOG };
 
+    # Registro que contendra los datos del LOG del modelo.
     type InfoAtaque: record {
 
             clasificacion: string &log &default = "";
@@ -60,13 +69,6 @@ export {
     };
 
 }
-
-
-#------------------------------------------------------------------------------#
-#                                  REGISTROS                                   #
-#------------------------------------------------------------------------------#
-
-
 
 #------------------------------------------------------------------------------#
 #                                  VARIABLES                                   #
@@ -141,7 +143,7 @@ function evaluarValores(wordList:table[string] of string,
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
 
-    # Se retorna el valor de epsilon sub cero.
+    # Se retorna el valor de epsilon sub cero y la suma de los logaritmos.
     return tablaEvaluacion;
 
 }
@@ -209,7 +211,7 @@ function evaluarAtributos(wordList:table[string] of string,
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
 
-    # Se retorna el valor de epsilon sub cero.
+    # Se retorna el valor de epsilon sub cero y la suma de los logaritmos.
     return tablaEvaluacion;
 
 }
@@ -276,7 +278,7 @@ function evaluarHostPath(wordList:table [count] of string,
     tablaEvaluacion[1] = results;
     tablaEvaluacion[2] = sumLogaritmos;
 
-    # Se retorna el valor de epsilon sub cero.
+    # Se retorna el valor de epsilon sub cero y la suma de los logaritmos.
     return tablaEvaluacion;
 }
 
@@ -289,9 +291,9 @@ function calcularIndiceAnormalidad(epsilon0: double, N: double,
     #                            del URI.
     #
     # Variables de entrada:
-    #   * epsilon0 :.
-    #   * N : .
-    #   * sumaLogaritmos:
+    #   * epsilon0      : Valor de epsilo sub cero.
+    #   * N             : Numero de estados .
+    #   * sumaLogaritmos: Suma de los logaritmos de las probabilidades
     #
     # Variables de salida:
     #   * indiceAnormalidad: Indice de anormalidad del URI.
@@ -319,8 +321,8 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     #    * vectorPoov : Vector que almacena los diferentes Poov.
     #
     # Variables de salida:
-    #    * tablaIndiceAnormalidad: Tabla que almacena los indices de anormalidad
-    #                              de cada uno de los estados del automata. 
+    #    * tablaIndiceAnormalidad: Variable que almacena el indice de anormalidad
+    #                              
 
 
     local indiceAnormalidad : double;
@@ -344,9 +346,10 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
     # de anormalidad.
     if (uriParsed$uriCorrecto){
 
-        # Se calcula el numero de estados que posee el URI.
+        # Se calcula el epsilon sub 0 y la suma de los logaritmos de las 
+        # probabilidades de aparicion de las palabras en el vocabulario tanto 
+        # del host como del path.
         host = evaluarHostPath(uriParsed$host,Bvector,vectorPoov["Poov1"]$valor,Bss);
-
         path = evaluarHostPath(uriParsed$path,Bvector,vectorPoov["Poov2"]$valor,Bsp);
 
 
@@ -359,9 +362,10 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
         # los valores como los atributos de los mismos.
         if (|uriParsed$query| != 0){
 
-
+            # Se calcula el epsilon sub 0 y la suma de los logaritmos de las 
+            # probabilidades de aparicion de las palabras en el vocabulario tanto 
+            # de los atributos como el de los valores.
             valores = evaluarValores(uriParsed$query,Bvector,vectorPoov["Poov3"]$valor,Bsv);
-
             atributos = evaluarAtributos(uriParsed$query,Bvector,vectorPoov["Poov4"]$valor,Bsa);
 
 
@@ -372,47 +376,12 @@ function evaluar(uriParsed: Segmentacion::uriSegmentado,
 
         }
             
+        # Se calcula el indice de anormalidad del URI.
         indiceAnormalidad = Nss + Nsp + Nsv + Nsa ;
 
     }
 
-    # Si el URI no posee una sintaxis correcta, entonces,  
-    # se asignara como indice de anormalidad un valor muy alto.
-    else{
-
-        indiceAnormalidad = infinito;
-
-    }
-
-
     return indiceAnormalidad;
-}
-
-#------------------------------------------------------------------------------#
-
-function calcularProbabilidad(vectorB: table[count] of double) : double {
-
-    # Descripción de la función: Clase Lexer.
-    #
-    # Variables de entrada:
-    #    * self : Corresponde a la instancia del objeto Lexer.
-    #    * data : Corresponde al input del Lexer.
-    #
-    # Variables de salida:
-    #    * Tokens : Lista de tokens correctos
-    #    * Errores : Lista de tokens con los errores lexicograficos encontrados
-
-    local resultVectorB : double;
-    resultVectorB = 0.0;
-
-    # Se calcula la sumatoria de las probabilidades que contiene el vectorB
-    for (i in vectorB){
-
-        resultVectorB = resultVectorB + log10(vectorB[i]);
-    }
-
-    return resultVectorB;
-
 }
 
 #------------------------------------------------------------------------------#
@@ -455,19 +424,8 @@ function verifiarAnomalia(theta: double,indicesAnormalidad: double){
         # se disparara una alerta.
 
         if (indicesAnormalidad >= theta){
-            print "EMITIR ALARMA";
 
             rec$clasificacion = "Se ha sobrepasado el umbral de anomalia : ";
-            rec$uri = Segmentacion::parsedUri$uri;
-            rec$probability = cat(" ",indicesAnormalidad);
-
-            # Se escribe en el archivo
-            Log::write(LOG, rec);
-
-        }
-        else {
-
-            rec$clasificacion = "### Es un URI normal : ";
             rec$uri = Segmentacion::parsedUri$uri;
             rec$probability = cat(" ",indicesAnormalidad);
 
