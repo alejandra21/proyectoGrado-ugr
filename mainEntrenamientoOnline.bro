@@ -22,35 +22,14 @@ module HTTP;
 #                             VARIABLES GLOBALES                               #
 #------------------------------------------------------------------------------#
 
-global Btable: table[string,string] of Evaluacion::Probability = table();
+
+global nombreArchivoModel  = "modeloBro.log";# Nombre del archivo que contiene
+                                             # el modelo.
 
 #------------------------------------------------------------------------------#
 #                                FUNCIONES                                     #
 #------------------------------------------------------------------------------#
 
-function verificarModelo(Btable: table[string,string] of Evaluacion::Probability){
-
-    # Descripción de la función: Funcion que se encarga de verificar si la tabla
-    #                            "Btable" esta vacia o no. 
-    #                           
-    #
-    # Variables de entrada:
-    #    * Btable : Parte correspondiente al host del URI.
-    #
-    # Variables de salida:
-    #    * Ninguna
-    #  
-
-    if (|Btable| == 0){
-
-        print "Error: Debe existir un archivo llamado \"modeloBro.log\" que ";
-        print "contenga los datos correspondientes a un modelo.";
-        print exit(0);
-    }
-
-}
-
-#------------------------------------------------------------------------------#
 function entrenarOnline(host: string, uri: string){
 
     # Descripción de la función: Funcion que se encarga de llamar a las 
@@ -70,10 +49,6 @@ function entrenarOnline(host: string, uri: string){
     Segmentacion::parseHost(host);
     Segmentacion::parseUrl(uri);
 
-    # Se verifica si el archivo que contiene los datos del modelo se encuentra
-    # vacio o no.
-    verificarModelo(Entrenamiento::Btable);
-
     # Una vez segmentado el uri, se procede a evaluar la expresion del
     # entrenamiento.
     Entrenamiento::entrenarOnline(Segmentacion::parsedUri);
@@ -90,9 +65,6 @@ function entrenarOnline(host: string, uri: string){
 event bro_init(){
 
     print "Inicio entrenamiento Online";
-
-    local nombreArchivoModel  = "modeloBro.log";# Nombre del archivo que contiene
-                                                # el modelo.
 
     # Se leen los datos del modelo y se almacenan en la tabla llamada "Btable".
     Input::add_table([$source=nombreArchivoModel, $name=nombreArchivoModel,
@@ -111,12 +83,14 @@ event Input::end_of_data(name: string, source: string) {
 
     # Se verifica si el archivo que contiene los datos del modelo se encuentra
     # vacio o no.
-    verificarModelo(Entrenamiento::Btable);
+    if (name == nombreArchivoModel && |Entrenamiento::Btable| > 0){
 
-    # Se lee el numero de palabras que existe en cada estado.
-    for (i in Entrenamiento::numPalabrasTable){
+        # Se lee el numero de palabras que existe en cada estado.
+        for (i in Entrenamiento::numPalabrasTable){
 
-        Entrenamiento::numPalabrasTable[i] = Entrenamiento::Btable[i,"numTotal"]$probability;
+            Entrenamiento::numPalabrasTable[i] = Entrenamiento::Btable[i,"numTotal"]$probability;
+        }
+        
     }
 
 }
@@ -128,7 +102,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
 
     # Si el method es GET se hace la llamada a la funcion "entrenarOnline"
-    if ( c$http$method == "GET" ){
+    if ( c$http$method == "HEAD" ){
 
             entrenarOnline(c$http$host,c$http$uri);
 

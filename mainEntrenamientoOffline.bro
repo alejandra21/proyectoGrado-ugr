@@ -66,7 +66,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
     {
 
         # Si el method es HEAD se hace la llamada a la funcion "entrenamiento"
-        if ( c$http$method == "GET" ){
+        if ( c$http$method == "HEAD" ){
 
                 entrenamiento(c$http$host,c$http$uri);
 

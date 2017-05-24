@@ -25,7 +25,7 @@ elif [ ${#@} -lt '2' ]
     fi
 
 # read the options
-TEMP=`getopt -o eti --long evl:,trainingOffline:,trainingInline: -- "$@"`
+TEMP=`getopt -o eti --long evl:,trainingOffline:,trainingOnline: -- "$@"`
 eval set -- "$TEMP"
 
 # extract options and their arguments into variables.

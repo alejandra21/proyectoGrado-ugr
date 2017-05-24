@@ -64,7 +64,7 @@ export{
     };
 
     type Probability: record {
-            probability: double;
+            probability: double &default = 0.0;
     };
 
     #--------------------------------------------------------------------------#
@@ -433,19 +433,31 @@ function escribirArchivoOnline(vocabulario: table[string,string] of Probability)
     local nombreArchivo = "modeloBro";
     Log::create_stream(LOG, [$columns=Info, $path=nombreArchivo]);
 
+    local numeroPalabras: Probability;
+    numeroPalabras = Probability();
 
     # Se incializa el registro que se utilizara para escribir sobre el 
     # archivo.
     local rec: Info;
     rec = Info();
 
-
     # Se lee el numero total de palabras que existe por cada estado.
     for (i in numPalabrasTable){
 
-        Btable[i,"numTotal"]$probability = numPalabrasTable[i];
-    }
+        if ([i,"numTotal"] in Btable){
 
+            Btable[i,"numTotal"]$probability = numPalabrasTable[i];
+
+        }
+        else{
+
+            numeroPalabras$probability = numPalabrasTable[i];
+            Btable[i,"numTotal"] = numeroPalabras;
+            numeroPalabras = Probability();
+
+        }
+
+    }
 
     # Se itera sobre las palabras del vocabulario para guardarlas en el log.
     for ([estado,palabra] in vocabulario){
@@ -687,6 +699,7 @@ function entrenarOnline(uriParsed: Segmentacion::uriSegmentado){
     numPalabrasTable[numeroPalabraSv] = entrenamientoValoresOnline(uriParsed$query,
                                         Btable,numPalabrasTable[numeroPalabraSv],
                                         "Bsv");
+
 
 }
 
