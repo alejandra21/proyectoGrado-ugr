@@ -1,10 +1,27 @@
 #!/bin/bash
 
+#
+# Universidad de Granada
+# Departamento de Teoría de la Señal, Telemática y Comunicaciones.
+#
+# Archivo : detectorAtaque
+#
+# Autor :
+#       Alejandra Cordero 
+#  
+
 # Se comprueba si el numero de flags introducidos es correcto.
 if [ ${#@} -gt '2' ]
     then
-        echo "Ha introducido mas flags de los debidos."
-        exit 1
+        echo "Ha introducido mas flags de los debidos:";
+        echo "./detectorAtaque (--evl | --trainingOffline | --trainingOnline) paquetesCapturados.pcap"; 
+        exit 1;
+    
+elif [ ${#@} -lt '2' ]
+    then
+        echo "Ha introducido menos flags de los debidos:";
+        echo "./detectorAtaque (--evl | --trainingOffline | --trainingOnline) paquetesCapturados.pcap"; 
+        exit 1;
     fi
 
 # read the options
@@ -14,10 +31,11 @@ eval set -- "$TEMP"
 # extract options and their arguments into variables.
 while true ; do
     case "$1" in
-        -e|--evl)  bro -C -r $2 mainEvaluacion.bro; exit 1 ;;
-        -t|--trainingOffline) bro -C -r $2 mainEntrenamiento.bro; exit 1 ;;
-        -i|--trainingInline) bro -C -r $2 entrenamientoInline.bro; exit 1;;
+        --evl)  bro -C -r $2 mainEvaluacion.bro; exit 1 ;;
+        --trainingOffline) bro -C -r $2 mainEntrenamientoOffline.bro; exit 1 ;;
+        --trainingOnline) bro -C -r $2 mainEntrenamientoOnline.bro; exit 1;;
         --) shift ; break ;;
-        *) echo "Internal error!" ; exit 1 ;;
+        *) echo "./detectorAtaque (--evl | --trainingOffline | --trainingOnline) paquetesCapturados " ;
+           exit 1 ;;
     esac
 done
