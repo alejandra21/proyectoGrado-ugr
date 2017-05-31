@@ -172,7 +172,7 @@ event http_reply(c: connection, version: string, code: count, reason: string)
 
     # Si el method es de tipo "HEAD" se procedera a evaluar si el URI
     # es anomalo o no.
-    if ( c$http$method == "HEAD" ){
+    if ( c$http$method == "GET" ){
 
             evaluarUri(c$http$host,c$http$uri);
 
