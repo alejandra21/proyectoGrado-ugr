@@ -1,0 +1,218 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+
+\title{\textbf{Introducci\'on}}
+\author{Alejandra Cordero }
+
+
+\begin{document}
+
+\maketitle
+
+
+Hoy en dia es muy dificil imaginar el mundo sin el Internet. Esta gran red de redes se ha convertido con el pasar de los años en la espina dorsal del mundo y se estima que mas y mas dispositivos se iran uniendo a esta red a futuro.\\
+
+Un gran porcentaje del uso que se le da al Internet proviene de las aplicaciones web. Las aplicaciones web son programas cliente-servidor en donde el cliente se corre en un web browser. Estas pueden ser desde correos electronicos, hasta paginas web con algun servicio en especifico. Para compartir toda la informacion brindada por estas aplicaciones a traves del Internet, se hace uso del protocolo HTTP (Hypertext Transfer Protocol). 
+Es aqui donde entran los servidores HTTP, estos servidores son los encargados de suplir las peticiones de sus clientes y enviar o recibir la informacion por los mismos.\\
+
+Este tipo de servidores son un punto apetecible para los hackers ya que los mismos contienen informacion importante de las aplicaciones web. Como acceso a la base de datos de la aplicacion que contiene las claves, los nombres de usuarios y numero de tarjetas de credito.\\ 
+
+Una gran cantidad de informacion esta depositada en servidores de este tipo, es por esto, que es de total importancia velar por la seguridad de dichos servidores.\\
+
+De dicho tema se hablara a continuacion en el presente trabajo. Aqui, se hablara sobre la implementación de un protocolo desarrollado por J.E. Díaz-Verdejo, P. García-Teodoro, P. Muñoz, G. Maciá-Fernández, F. De Toro de la Universidad de Granada llamado SSM (Segmented Stochastic Modelling) en un lenguaje se scripting de un analizador de redes llamado Bro.
+
+SSM (Segmented Stochastic Modelling) es un sistema que “se basa en la definición de un autómata de estados finitos estocástico capaz de evaluar la probabilidad de generación de una petición concreta. El autómata permitirá, por tanto, dada una petición, evaluar si dicha petición es legítima (corresponde al modelo) y su probabilidad. En función de la probabilidad y de un umbral se clasificaran las peticiones como normales o anormales” J.E. Díaz-Verdejo, P. García-Teodoro, P. Muñoz, G. Maciá-Fernández, F. De Toro. 2007. Una aproximación basada en Snort para el desarrollo eimplantación de IDS híbridos.\\
+
+Con la realización de este detector de intrusiones se pretende ofrecer un sistema que detecte de manera efectiva actividades inadecuadas en la red.\\
+
+El trabajo estara estructurado de la siguiente forma:
+
+En el capitulo uno se hablara sobre la motivación de realizar dicho proyecto, los objetivos tanto generales como especificos, la planificacion que se utilizo para realizar el proyecto y el presupuesto del mismo.\\ 
+
+Por otra parte,en el segundo capitulo se tocaran temas relacionados con el estado del arte del proyecto. En este capitulo se tocaran los aspectos que se debieron estudiar previamente para llevar el proyecto a cabo. En primero lugar se explicara la definicion de IDS y los tipos de IDS que existen, se explicara la composicion de los URI segun el RFC (mencionar el numero del RFC). Ademas, se hablara sobre la herramiento utilizada y el lenguaje de scripting de la misma que se utilizo para implementar el sistema.\\
+
+En el tercer capitulo se explicaran los fundamentos del sistema SSM. Aqui, se dara una descripcion del funcionamiento SSM y de cada uno de los detalles, los modelos y los mosulos que lo conforman.\\
+
+En el cuarto capitulo se hablara sobre el diseno del sistema. Aqui se describiran los modulos en los que esta dividido el IDS y como es el funcionamiento de cada uno. Los detalles de implementacion de estos se explicaran en el capitulo quinto.\\
+
+El sexto capitulo tocara el tema de la evaluacion y las pruebas. En este capitulo se hablara sobre la base de datos utilizada para realizar las pruebas y los resultados arrojados por las mismas. Ademas se describiran un poco las pruebas tanto operativas como funcionales realizadas sobre el sistema.\\
+
+\section{Objetivos}
+
+\subsection{Objetivos generales}
+
+\begin{enumerate}
+  \item Implementar un detector de ataques híbrido que haga uso del sistema SSM mediante el uso de la herramienta Bro.
+\end{enumerate}
+
+
+\subsection{Objetivos especificos}
+
+
+\begin{enumerate}
+  \item Implementación de una representación de un autómata de estados finito que sirva para evaluar tanto la sintaxis como la probabilidad de generación de una petición del protocolo HTTP.\\
+  \item Desarrollo de un modulo que mida la probabilidad de generación de los segmentos del URI.\\
+  \item Desarrollo de un modulo de entrenamiento con el cual se permita obtener un modelo de normalidad a partir de trafico libre de ataques.\\
+  \item Obtener los valores optimos del los parametros de configuracion del sistema para asi garantizar la menor cantidad de falsos positivos posibles.\\
+\end{enumerate}
+
+\section{Planificaci\'on}
+\section{Presupuesto}
+
+
+
+\section{Marco Te\'orico}
+
+En el siguiente cap\'itulo se describir\'an algunos conceptos importantes para comprender la implementaci\'on del sistema del que se hablar\'a en el presente trabajo. Dichos conceptos son: \textit{IDS, el protocolo HTTP, URI , autom\'atas de estados finitos, autom\'atas probabilisticos, modelo de Markov,SSM y Bro}.\\
+
+En l\'ineas generales, el presente trabajo, tiene como prop\'osito explicar la implementaci\'on de un \textit{IDS} híbrido que haga uso del sistema \textit{SSM} a traves del lenguaje de scripting de la herramienta \textit{BRO}.\\
+
+El sistema analizar\'a los \textit{URI} de las peticiones tipo GET del protocolo \textit{HTTP}, haciendo uso de la t\'ecnica \textit{SSM}. Esta t\'ecnica, a su vez hace uso \textit{automatas de estados finitos probabilisticos} y del \textit{modelo de Markov} para determinar si ciertas peticiones realizadas a un servidor HTTP son posibles ataques o no.
+
+
+\section{IDS}
+\section{Protocolo HTTP}
+
+Definici\'on:
+
+Hypertext Transfer Protocol (HTTP) seg\'un el RFC 7230 es un protocolo cliente/servidor que funciona a nivel de capa de aplicaci\'on y que funciona para transferir hipertexto -- -- a traves de la red.\\
+
+ Este protocolo es considerado una de las bases fundamentales dentro de la comunicaci\'on de datos en el Internet.\\
+ 
+ El cliente de un protocolo HTTP es un programa que se encarga de crear una conexi\'on con el servidor y enviar las diferentes peticiones de recursos al mismo. Por su parte, el servidor HTTP se encargar\'a de aceptar dicha conex\'on y responder a las peticiones hechas por el cliente.\\
+ 
+Los recursos de este protocolo son identificados por un Uniform Resource Identifier (URI).\\
+
+Por otra parte, este protocolo posee diferentes metodos para solicitar las peticiones de recursos. Estos son, el m\'etodo GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE. \\
+
+Los m\'etodos GET, HEAD y POST son los mas utilizados en las comunicaciones del protocolo HTTP. El m\'etodo GET, cosisiste en solicitar de un cierto recurso al programa servidor HTTP. Por su parte,el m\'etodo POST se utiliza para informar al destinatario que procese la informaci\'on que viene incluida en la solicitud realizada. El m\'etodo HEAD, funciona de manera identica al m\'etodo GET con la \'unica diferencia de que la solicitud solo ser\'a respondida con la cabecera del recurso excluyendo el cuerpo del mismo.\\
+
+-------------------------\\
+is an application protocol for distributed, collaborative, and hypermedia information systems.[1] HTTP is the foundation of data communication for the World Wide Web.
+
+Hypertext is structured text that uses logical links (hyperlinks) between nodes containing text. HTTP is the protocol to exchange or transfer hypertext.
+
+ The Hypertext Transfer Protocol (HTTP) is a stateless application-
+   level protocol for distributed, collaborative, hypertext information
+   systems. 
+   
+  An HTTP "client" is a
+   program that establishes a connection to a server for the purpose of
+   sending one or more HTTP requests.  An HTTP "server" is a program
+   that accepts connections in order to service HTTP requests by sending
+   HTTP responses.
+   
+ HTTP relies upon the Uniform Resource Identifier (URI) standard
+   [RFC3986] to indicate the target resource (Section 5.1) and
+   relationships between resources.  Messages are passed in a format
+   similar to that used by Internet mail [RFC5322] and the Multipurpose
+   Internet Mail Extensions (MIME) [RFC2045] (see Appendix A of
+   [RFC7231] for the differences between HTTP and MIME messages).
+
+   Most HTTP communication consists of a retrieval request (GET) for a
+   representation of some resource identified by a URI.  In the simplest
+   case, this might be accomplished via a single bidirectional
+   connection (===) between the user agent (UA) and the origin
+   server (O).
+   
+Tipos de metodos:
+
+ The request method token is the primary source of request semantics;
+   it indicates the purpose for which the client has made this request
+   and what is expected by the client as a successful result.
+    
+\section{URI}
+
+Seg\'un el RFC 3986 un URI (Uniform Resource Identifier) es una serie de caracteres que identifican un recurso en la red. Este tiene una sintaxis especifica que esta conformada por un segmento de caracteres que corresponde al esquema, otro segmento que ser\'ia la autoridad, otro la ruta, un segmento designado al query y uno al fragment.\\
+
+A continuaci\'on se describen de manera breve cada uno de los componentes que pueden conformar un URI.
+
+\begin{itemize}
+
+\item Esquema:\\
+
+El esquema identifica el protocolo que va a ser utilizado. En el caso del presente trabajo, los URIs utilizaran unicamente el protocolo http o https.\\
+
+
+\item Authority:\\
+
+Este componente del URI posee informaci\'on del usuario que pueden ser nombres de usuarios y contrasenas(campo opcional), el host y el puerto correspondiente (campo opcional).\\
+
+El host de un URI viene representado bien sea por un IPv4 o un nombre de dominio, seguido de un n\'umero de puerto (opcional) que identifican la m\'aquina en donde est\'an los recursos a solicitar.\\
+   
+\item Path:\\
+La ruta de un URI son un conjunto de segmentos organizados de manera jerarquica y separados por slashes que contienen informaci\'on sobre la ubicaci\'on de los recursos a solicitar.\\
+
+\item Query:\\
+
+El query de un URI es un segmento de informaci\'on no jerarquizada, cuyo simb\'olo de inicio es el signo de interrogaci\'on (?). Por lo general, el query est\'a conformado por una dupla "atributo=valor" que junto con la ruta ayudan a identificar el recurso que se desea solicitar. No obstante, a diferencia de la ruta, la informaci\'on aqu\'i contenida debe ser procesada por el servidor al que se le esta solicitando el recurso. \\
+Por otra parte, el atributo, representa el nombre de una variable y el valor vendria siendo el valor que contendr\'a dicha variable.\\
+
+\item Fragment:
+
+En un URI, el fragment corresponde a la direcci\'on de un segundo recurso dentro del primer recurso identificado por la ruta y el query. Esta cadena de caracteres esta precedida por el simbolo de un numeral (\#).\\
+
+\end{itemize}
+
+En un URI, tanto el esquema como la ruta son segmentos que deben existir de manera obligatoria. Si la ruta es un caracter vac\'io, se asumir\'a que la misma es "/". El resto de los segmentos son opcionales.\\
+
+\section{Autom\'atas de estados finitos}
+
+Los automatas son modelos muy importante dentro de las ciencias de la computaci\'on. Su presencia est\'a  en diversos ambitos de esta ciencia. Desde programas para hacer la verificaci\'on de protocolos de comunicaci\'on, analisadores sint\'acticos de compiladores,programas que realizan la verificaci\'on del comportamiento de circuitos digitales o el escaneo de largos bloques de texto.
+
+Antes que nada es preciso recalcar que existen dos tipos de automatas de estados finitos: los automatas deterministas y los no deterministas.
+
+Los automatas deterministas son aquellos que para cada input solo existe un estado del automata al cual se puede transitar.
+
+Un automata determinista, A, se puede representar de la siguiente manera:
+
+A = (Q,$\Sigma,\delta,q_{0},F$)\\
+
+Donde:
+
+\begin{itemize}
+
+\item Q : Es un conjunto de estados.\\
+\item $\Sigma$ : Es un conjunto de simbolos, tambien llamado alfabeto.\\
+
+\item $\delta$ : Es una funci\'on de transici\'on que toma como argumento un estado y un simbolo y retorna un estado, es decir, $\delta$ : Q x $\Sigma$ $\rightarrow Q.$\\
+Si el automata es representado como un grafo, entonces esta funci\'on de trasnsici\'on vendria representada por el arcco que une dos nodos junto al simbolo del mismo.
+
+\item $q_{0}$: Es el estado inicial del automata.\\
+
+\item F : Es un conjunto de estados finales.\\
+
+\end{itemize}
+
+A continuaci\'on se presentar\'a un ejemplo de un automata.
+
+A = (\{X,Z\},\{a,b\},\{$\delta(X,a)=Z,\delta(Y,b)=X$\},\{X\},\{Y\})
+
+ El mismo ser\'a representado a traves de un grafo, en donde los nodos representar\'an los estados del automata, y los arcos junto a sus simbolos representaran las funciones de transici\'on.\\
+
+INSERTAR IMAGEN DEL AUTOMATA A.
+
+Por otra parte, los automatas no deterministas, a diferencia de los automatas deterministas pueden tener un conjunto de estado en el automata al cual se puede transitar para cada input, es decir, la funci\'on de transici\'on de un automata no determinista en lugar de devolver solo un estado dado un simbolo y un estado puede devolver un conjunto de estados.
+
+La representaci\'on de los mismos es analoga a la de los automatas deterministas con la diferencia que $\delta$ estar\'ia definida como una funci\'on de transici\'on de la siguiente forma $\delta$ : Q x $\Sigma$ $\rightarrow \{Q\}.$
+
+\section{Modelo de Markov}
+\section{SSM}
+\section{Bro}
+
+Bro es un software open source cap\'az de analizar a detalle las actividades que ocurren en la red.
+
+Por otra parte, este software incluye un lenguaje de scripting orientado a eventos cuya funci\'on es extender y personalizar las funcionalidades primarias que otorga Bro. 
+
+Este lenguaje de scripting cuenta con una cola de eventos de tipo FIFO y un manejador de eventos que se encarga de servir a los mismos.
+
+Cuenta, adem\'a con un tipo de registro especial que almacena la informaci\'on del estado de las conexiones durante su tiempo de vida.
+
+Por otra parte cuenta con los tipos de datos comunes que encontramos en la mayor\'ia de los lenguajes de programaci\'on como el "int", que representa los n\'umeros enteros de 64 bits, "double" que representa los n\'umeros flotantes de 64 bits, "bool" que representa los booleanos y "count"  que representa los n\'umeros enteros sin signo de 64 bits. Adem\'as de estos tipos de datos el lenguaje de scripting de Bro posee otro tipos de datos  mas especificos para poder trabajar el an\'alisis de redes de manera mas c\'omoda como son el "addr" que es un tipo de datos destinado a las direcciones ip, "port" para los puertos de la capa de transporte, "subnet" para las mascaras de subred, time para almacenar datos que representen tiempo, "interval" para representar intervalos de tiempo y "pattern" para las expresiones regulares.\\
+
+Adem\'as, estructura de datos como: conjuntos, tablas, vectores y registros.
+
+El lenguaje de scripting de Bro posee un framework que permite manejar de manera c\'omoda y sencilla los logs del sistema. Con el mismo, se puede crear archivos, escribir datos de forma organizada y filtrar informac\'on de los logs\\
+
+\end{document}
