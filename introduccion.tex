@@ -58,6 +58,24 @@ El sexto capitulo tocara el tema de la evaluacion y las pruebas. En este capitul
 \end{enumerate}
 
 \section{Planificaci\'on}
+
+El desarrollo de este proyecto se bas\'o en cuatro grandes fases:
+\begin{enumerate}
+\item Conocer el estado  del tema.
+\item Implementación del autómata de reconocimiento de URI's
+\item Realizar los entrenamientos.
+\item Documentación y desarrollo de libro de pasantía.
+\end{enumerate}
+
+En la fase de conocer el estado del arte del tema del proyecto tuvo una duraci\'on de cuatro semanas y durante este tiempo se estudio la documentaci\'on de la herramienta BRO y su lenguaje de scripting. En esta subfase, se aprendi\'o a utilizar tanto la herramienta BRO como a programar haciendo uso del lenguaje de scripting de esta herramiento. Adem\'as, se hizo un estudio sobre los IDS, los tipos de IDS y el sistema SSM. 
+Este fue un paso muy importante dentro de la documentaci\'on ya que el hecho de entender que era un IDS y como funciona un sistema SSM era una base fundamental para la realizaci\'on del proyecto. As\'i mismo, se hizo una lectura del RFC 3986 (URI) y se hizo una pequeña investigaci\'on sobre el protocolo HTTP.\\
+
+Luego de la fase de conocer el estado del arte se procedi\'o a la segunda fase: la fase de implementaci\'on del aut\'omata de reconocimiento de URIs. En esta fase se desarroll\'o el filtro de peticiones GET del protocolo HTTP en el lenguaje de scripting de Bro, despu\'es en el mismo lenguaje de programaci\'on se implement\'o un modulo para segmentar los URIs que ven\'ina con las peticiones de tipo GET. Finalmente, se desarroll\'o el modulo de evaluaci\'on cuya funci\'on es la de evaluar la probabilidad de generaci\'on de los segmentos del URI dado un modelo de normalidad. Esta fase dur\'o seis semanas.Para ambos modulos implementados se realizaron pruebas funcionales.\\
+
+Despu\'es de culminar la fase anterior se procedi\'o a abordar la fase de realizar los entrenamientos. Esta fase consisti\'o en implementar el modulo de entrenamiento del sistema para poder realizar modelos de normalidad del mismo en el lenguaje de scripting de Bro, obtener paquetes de tipo http haciendo uso de un "sniffer" para realizar un pequeño modelo de normalidad y verificar la correctitud del modulo implementado. Luego se procedi\'o a realizar pruebas con las bases de datos RDB que es una base de datos de ataques, PVHR21 Y PVHR22 que son bases de datos con trazas normales, con la intenci\'on de probar el funcionamiento global del sistema\\
+
+Una vez probada toda la correctitud del sistema se procedi\'o a desarrollo de libro del proyecto de grado. Esta fase consisti\'o en estructurar y redactar el libro del proyecto.
+
 \section{Presupuesto}
 
 
@@ -73,66 +91,26 @@ El sistema analizar\'a los \textit{URI} de las peticiones tipo GET del protocolo
 
 \section{Detector de intrusiones}
 
-Un detector de intrusiones o IDS por sus siglas en ingl\'es (intrusion-detection system) a manera general es un sistema que se encarga de procesar la informaci\'on entrante al sistema a proteger.
+Un detector de intrusiones o IDS por sus siglas en ingl\'es (intrusion-detection system) a manera general es un sistema que se encarga de procesar la informaci\'on entrante al sistema a proteger.\\
 
-La intenci\'on de tomar la infromaci\'on entrante es para realizar un diagnostico de seguridad para asi descrubir los posibles ataques, brechas de seguridad o vulnerabilidades que pueden existir en el sistema a proteger.
+La intenci\'on de tomar la infromaci\'on entrante es para realizar un diagnostico de seguridad para asi descrubir los posibles ataques, brechas de seguridad o vulnerabilidades que pueden existir en el sistema a proteger.\\
 
-Existen diversos tipos de IDS. Pero los mas comunes son los IDS basados en firmas, los IDS basados en comportamiento y los IDS h\'ibridos que son una mezcla entre un IDS basado en firma y un IDS basado en comportamiento.
+Existen diversos tipos de IDS. Pero los mas comunes son los IDS basados en firmas, los IDS basados en comportamiento y los IDS h\'ibridos que son una mezcla entre un IDS basado en firma y un IDS basado en comportamiento.\\
 
-Los IDS basados en firmas, utilizan una base de datos que contiene una lista de posibles ataques que pueden ser perpetuados y las vulnerabilidades del sistema. Entonces, el IDS cuando esta filtrando la informaci\'on que va a entrar al sistema a proteger lo que hace es comparar esa o parte de la informac\'on con la base de datos de ataques, si dentro de la informaci\'on entrante existe una firma que se encuentra en la base de datos entonces se activar\'a una alarma para indicar que un ataque esta siendo perpetuado. De otro modo, la informaci\'on entrante ser\'a  catalogada como aceptable.
+Los IDS basados en firmas, utilizan una base de datos que contiene una lista de posibles ataques que pueden ser perpetuados y las vulnerabilidades del sistema. Entonces, el IDS cuando esta filtrando la informaci\'on que va a entrar al sistema a proteger lo que hace es comparar esa o parte de la informac\'on con la base de datos de ataques, si dentro de la informaci\'on entrante existe una firma que se encuentra en la base de datos entonces se activar\'a una alarma para indicar que un ataque esta siendo perpetuado. De otro modo, la informaci\'on entrante ser\'a  catalogada como aceptable.\\
 
-La eficacia de los detectores de intrusiones basados en firmas es muy buena, sin embargo, su buen funcionamiento depende completamente de la constante actualización de la base de datos de ataques.
-
-
-Por otra parte, est\'an los IDS basados en comportamiento detectan los ataque de manera diferente. En este tipo de IDS los ataques son detectados a partir de la observaci\'on del comportamientos, bien sea del sistema o de los usuarios. 
-
-El modo de funcionamiento de un IDS basado en comportamiento se basa en, recolectar la informaci\'on entrante del sistema a proteger y comparar dicha informaci\'on con un modelo de normalidad del sistema que ha sido previamente construido.El modelo de normalidad se construye a partir de comportamientos previamente observado en el sistema y que son catalogados como "normales". Si existe una incongruencia muy grande entre la informaci\'on entrante y el modelo de normalidad, entonces se generar\'a una alarma. 
-
-No obstante, uno de los problemas que posee este tipo de detector de instrusiones es la alta tasa de falsos positivos que puede llegar a tener. Esto se debe a que es casi imposible que un modelo posea todos los comportamientos normales de un sistema en su totalidad, lo cual provocar\'ia que informac\'on que est\'a libre de ataques sea catalogada como una amenaza. Tambi\'en esta el hecho de que es muy posible que con el pasar del tiempo, el comportamiento del sistema a proteger vaya cambiando lo cual implicar\'ia que si no se hace una constante revis\'on del y reentrenamiento modelo de normalidad el mismo quedar\'a obsoleto y la informaci\'on entrante ser\'a mal catalogada por el IDS. El problema de realizar entrenamientos constantes para actualizar un modelo de normalidad es que a pesar de que el modelo contendr\'a una informaci\'on acertada acerca del comoportamiento del sistema se crear\'an brechas de tiempo en donde el sistema ser\'a muy vulnerable a ataques ya que en lugar de estar funcionando el modulo para detectar ataques estar\'a funcionando aquel que funciona para entrenar el modelo de normalidad. Por lo tanto, si un ataque es perpetuado durante ese periodo de tiempo el mismo quedar\'a grabado en el modelo de normalidad como un comportamiento normal del sistema.
-
-As\'i mismo tambi\'en existen los IDS h\'ibridos cuyo funcionamiento mezcla el funcionamiendo de los detectores de instrusiones basados en firma y los basados en comportamiento. En pocas palabras, los IDS h\'ibirdos suelen contar con una base de datos de ataques y tambi\'en con un modelo de normalidad.
-
-El IDS implementado es de t\'ipo h\'ibrido ya que por una parte, se revisan las firmas (en este caso los URI) de la informaci\'on entrante, y si estas no muestran ninguna incongruencia, dicha informaci\'on pasar\'a a ser contrastada con el modelo de normalidad. S\i la misma es muy diferente a dicho modelo, entonces se emitir\'a una alarma.
+La eficacia de los detectores de intrusiones basados en firmas es muy buena, sin embargo, su buen funcionamiento depende completamente de la constante actualización de la base de datos de ataques.\\
 
 
-An intrusion-detection system acquires information about an information system to perform a diagnosis on
-the security status of the latter. The goal is to discover breaches of security, attempted breaches, or open
-vulnerabilities that could lead to potential breaches\\
+Por otra parte, est\'an los IDS basados en comportamiento detectan los ataque de manera diferente. En este tipo de IDS los ataques son detectados a partir de la observaci\'on del comportamientos, bien sea del sistema o de los usuarios. \\
 
-An intrusion-detection system can be described at a very macroscopic level as a detector that processes
-information coming from the system to be protected\\
+El modo de funcionamiento de un IDS basado en comportamiento se basa en, recolectar la informaci\'on entrante del sistema a proteger y comparar dicha informaci\'on con un modelo de normalidad del sistema que ha sido previamente construido.El modelo de normalidad se construye a partir de comportamientos previamente observado en el sistema y que son catalogados como "normales". Si existe una incongruencia muy grande entre la informaci\'on entrante y el modelo de normalidad, entonces se generar\'a una alarma.\\
 
+No obstante, uno de los problemas que posee este tipo de detector de instrusiones es la alta tasa de falsos positivos que puede llegar a tener. Esto se debe a que es casi imposible que un modelo posea todos los comportamientos normales de un sistema en su totalidad, lo cual provocar\'ia que informac\'on que est\'a libre de ataques sea catalogada como una amenaza. Tambi\'en esta el hecho de que es muy posible que con el pasar del tiempo, el comportamiento del sistema a proteger vaya cambiando lo cual implicar\'ia que si no se hace una constante revis\'on del y reentrenamiento modelo de normalidad el mismo quedar\'a obsoleto y la informaci\'on entrante ser\'a mal catalogada por el IDS. El problema de realizar entrenamientos constantes para actualizar un modelo de normalidad es que a pesar de que el modelo contendr\'a una informaci\'on acertada acerca del comoportamiento del sistema se crear\'an brechas de tiempo en donde el sistema ser\'a muy vulnerable a ataques ya que en lugar de estar funcionando el modulo para detectar ataques estar\'a funcionando aquel que funciona para entrenar el modelo de normalidad. Por lo tanto, si un ataque es perpetuado durante ese periodo de tiempo el mismo quedar\'a grabado en el modelo de normalidad como un comportamiento normal del sistema.\\
 
-\textbf{Knowledge-based intrusion detection:}
+As\'i mismo tambi\'en existen los IDS h\'ibridos cuyo funcionamiento mezcla el funcionamiendo de los detectores de instrusiones basados en firma y los basados en comportamiento. En pocas palabras, los IDS h\'ibirdos suelen contar con una base de datos de ataques y tambi\'en con un modelo de normalidad.\\
 
-Knowledge-based intrusion-detection techniques apply the knowledge accumulated about specific attacks and
-system vulnerabilities. The intrusion-detection system contains information about these vulnerabilities and
-looks for
-attempts
-to exploit them. When such an attempt is detected, an alarm is raised. In other words,
-any action that is not explicitly recognized as an attack is considered acceptable. Therefore, the
-accuracy
-of knowledge-based intrusion-detection systems is considered good. However, their
-completeness
-depends on
-the regular update of knowledge about attacks.\\
-
-
-\textbf{Behavior-based intrusion-detection}
-
-Behavior-based intrusion-detection techniques assume that an intrusion can be detected by observing a
-deviation from the normal or expected behavior of the system or the users. The model of normal or valid
-behavior is extracted from reference information collected by various means. The intrusion-detection system
-later compares this model with the current activity. When a deviation is observed, an alarm is generated.
-In other words, anything that does not correspond to a previously learned behavior is considered intrusive.\\
-
-The high false-alarm rate is generally cited as the main drawback of behavior-based techniques because
-not the entire scope of the behavior of an information system may be covered during the learning phase.
-Also, behavior can change over time, introducing the need for periodic on-line retraining of the behavior
-profile, resulting either in unavailability of the intrusion-detection system or in additional false alarms.
-The information system can undergo attacks at the same time the intrusion-detection system is learning
-the behavior.  As a result, the behavior profile will contain intrusive behavior, which is not detected as
-anomalous.
+El IDS implementado es de t\'ipo h\'ibrido ya que por una parte, se revisan las firmas (en este caso los URI) de la informaci\'on entrante, y si estas no muestran ninguna incongruencia, dicha informaci\'on pasar\'a a ser contrastada con el modelo de normalidad. S\i la misma es muy diferente a dicho modelo, entonces se emitir\'a una alarma.\\
 
 \section{Protocolo HTTP}
 
@@ -150,7 +128,6 @@ Por otra parte, este protocolo posee diferentes metodos para solicitar las petic
 
 Los m\'etodos GET, HEAD y POST son los mas utilizados en las comunicaciones del protocolo HTTP. El m\'etodo GET, cosisiste en solicitar de un cierto recurso al programa servidor HTTP. Por su parte,el m\'etodo POST se utiliza para informar al destinatario que procese la informaci\'on que viene incluida en la solicitud realizada. El m\'etodo HEAD, funciona de manera identica al m\'etodo GET con la \'unica diferencia de que la solicitud solo ser\'a respondida con la cabecera del recurso excluyendo el cuerpo del mismo.\\
 
--------------------------\\
     
 \section{URI}
 
